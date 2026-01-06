@@ -73,6 +73,10 @@ class ItemResource extends Resource
                     ->numeric()
                     ->sortable()
                     ->searchable(),
+                Tables\Columns\TextColumn::make('ubicacion.codigo')
+                    ->label('Cód. Ubicación') // Short label
+                    ->sortable()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('ubicacion.nombre')
                     ->numeric()
                     ->sortable()

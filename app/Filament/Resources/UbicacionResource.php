@@ -80,6 +80,30 @@ class UbicacionResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('reasignar')
+                    ->label('Reasignar Todo')
+                    ->icon('heroicon-o-arrow-path-rounded-square')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Transferir Inventario de Ubicación')
+                    ->modalDescription('Esto cambiará el responsable de TODOS los ítems en esta ubicación. ¿Estás seguro?')
+                    ->form([
+                        Forms\Components\Select::make('nuevo_responsable_id')
+                            ->label('Nuevo Responsable')
+                            ->options(\App\Models\Responsable::all()->pluck('nombre_completo', 'id'))
+                            ->searchable()
+                            ->required(),
+                    ])
+                    ->action(function (Ubicacion $record, array $data) {
+                        $count = $record->items()->update([
+                            'responsable_id' => $data['nuevo_responsable_id']
+                        ]);
+
+                        \Filament\Notifications\Notification::make()
+                            ->title("Se transfirieron {$count} ítems")
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
