@@ -24,4 +24,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// PDF Reports (requires auth)
+Route::middleware('auth')->prefix('reportes-pdf')->group(function () {
+    Route::get('/ubicacion/{ubicacionId}', [\App\Http\Controllers\ReportesPdfController::class, 'ubicacion'])
+        ->name('reportes.pdf.ubicacion');
+    Route::get('/responsable/{responsableId}', [\App\Http\Controllers\ReportesPdfController::class, 'responsable'])
+        ->name('reportes.pdf.responsable');
+});
+
 require __DIR__.'/auth.php';

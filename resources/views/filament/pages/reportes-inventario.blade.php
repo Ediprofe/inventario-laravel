@@ -78,9 +78,19 @@
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Resumen de Inventario</h3>
                             <p class="text-sm text-gray-500 dark:text-gray-400">Items en esta ubicación agrupados por artículo</p>
                         </div>
-                        <span class="px-3 py-1 bg-blue-100 text-blue-700 font-bold rounded-full text-sm dark:bg-blue-900 dark:text-blue-300">
-                            {{ $this->totalItemsUbicacion }} Items
-                        </span>
+                        <div class="flex items-center gap-3">
+                            <a href="{{ route('reportes.pdf.ubicacion', $this->ubicacionId) }}" 
+                               target="_blank"
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                PDF
+                            </a>
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 font-bold rounded-full text-sm dark:bg-blue-900 dark:text-blue-300">
+                                {{ $this->totalItemsUbicacion }} Items
+                            </span>
+                        </div>
                     </div>
                     <table class="w-full text-left text-sm">
                         <thead class="bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
@@ -149,7 +159,15 @@
                              </span>
                         </div>
                     </div>
-                    <div class="ml-auto">
+                    <div class="ml-auto flex items-center gap-3">
+                        <a href="{{ route('reportes.pdf.responsable', $this->responsableFilterId) }}" 
+                           target="_blank"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            PDF
+                        </a>
                          <span class="px-4 py-2 bg-purple-100 text-purple-700 font-bold rounded-full dark:bg-purple-900 dark:text-purple-300">
                             {{ $this->totalItemsResponsable }} Items Total
                         </span>

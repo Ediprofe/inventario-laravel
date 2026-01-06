@@ -48,8 +48,15 @@ class ListItems extends ListRecords
                 ->color('success')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->action(function () {
-                    return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\InventoryExport(), 'inventario_' . date('Y-m-d_H-i') . '.xlsx');
-                })
+                    return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\InventoryExport(), 'Backup_Inventario_' . date('Y-m-d_H-i') . '.xlsx');
+                }),
+            Actions\Action::make('audit_report')
+                ->label('Reporte de Auditoría')
+                ->color('info')
+                ->icon('heroicon-o-clipboard-document-list')
+                ->action(function () {
+                    return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AuditReportExport(), 'Inventario_Institucional-' . date('Y-m-d') . '.xlsx');
+                }),
         ];
     }
 }

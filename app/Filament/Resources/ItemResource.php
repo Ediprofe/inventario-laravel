@@ -82,9 +82,9 @@ class ItemResource extends Resource
                     ->sortable()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('responsable.nombre_completo')
-                    ->numeric()
+                    ->label('Responsable')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('marca')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),

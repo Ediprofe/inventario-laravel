@@ -275,9 +275,26 @@ class ResetImportService
              // Responsable
              $responsableId = null;
              if (!empty($row['responsable_nombre_completo'])) {
-                 $parts = explode(' ', trim($row['responsable_nombre_completo']));
-                 // Try match
-                 $resp = Responsable::where('nombre', 'like', $parts[0] . '%')->first(); // Naive match
+                 $fullName = trim($row['responsable_nombre_completo']);
+                 $parts = explode(' ', $fullName);
+                 
+                 // Try exact match first (nombre + apellido concatenated)
+                 $resp = Responsable::whereRaw("TRIM(nombre || ' ' || apellido) = ?", [$fullName])->first();
+                 
+                 // If not found, try with first name + last name parts
+                 if (!$resp && count($parts) >= 2) {
+                     $nombre = $parts[0];
+                     $apellido = implode(' ', array_slice($parts, 1));
+                     $resp = Responsable::where('nombre', $nombre)
+                         ->where('apellido', $apellido)
+                         ->first();
+                 }
+                 
+                 // Fallback: partial match on nombre (legacy behavior)
+                 if (!$resp && count($parts) >= 1) {
+                     $resp = Responsable::where('nombre', $parts[0])->first();
+                 }
+                 
                  $responsableId = $resp?->id;
              }
              
