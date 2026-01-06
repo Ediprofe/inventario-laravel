@@ -9,10 +9,11 @@ use App\Models\Responsable;
 use App\Models\Item;
 use App\Models\Articulo;
 use App\Enums\EstadoFisico;
+use App\Filament\Resources\ItemResource;
 use Illuminate\Support\Collection;
-
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
+use Filament\Forms\Form;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -26,9 +27,13 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     public function table(Table $table): Table
     {
+        // Reuse the exact columns, actions (Edit), and bulk actions from the main ItemResource
+        $table = ItemResource::table($table);
+
+        // Apply our specific context filters and fix EditAction form
         return $table
             ->query(function (Builder $query) {
-                // If inactive tab or no filter, return empty
+                // If inactive tab or no filter, return empty to be safe
                 if ($this->activeTab === 'ubicacion' && $this->ubicacionId) {
                     return Item::query()->where('ubicacion_id', $this->ubicacionId);
                 }
@@ -37,29 +42,10 @@ class ReportesInventario extends Page implements HasForms, HasTable
                 }
                 return Item::query()->whereRaw('1 = 0');
             })
-            ->columns([
-                Tables\Columns\TextColumn::make('placa')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('articulo.nombre')
-                    ->label('Artículo')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('marca')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('serial')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('estado')
-                    ->badge(),
-                Tables\Columns\TextColumn::make('responsable.nombre_completo')
-                    ->label('Responsable')
-                    ->hidden(fn () => $this->activeTab === 'responsable'), // Hide if redundant
-                Tables\Columns\TextColumn::make('ubicacion.nombre')
-                    ->label('Ubicación')
-                    ->description(fn (Item $item) => $item->ubicacion->codigo)
-                    ->hidden(fn () => $this->activeTab === 'ubicacion'), // Hide if redundant
-            ])
-            ->summary(null); // No summary needed in footer
+            ->actions([
+                Tables\Actions\EditAction::make()
+                    ->form(fn (Form $form) => ItemResource::form($form)),
+            ]);
     }
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
     protected static ?string $navigationLabel = 'Reportes de Inventario';
