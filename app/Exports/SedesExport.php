@@ -8,8 +8,13 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
-class SedesExport implements FromCollection, WithHeadings, WithMapping, WithTitle
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use App\Exports\Concerns\DefaultTableStyles;
+
+class SedesExport implements FromCollection, WithHeadings, WithMapping, WithTitle, WithStyles, ShouldAutoSize
 {
+    use DefaultTableStyles;
     public function collection()
     {
         return Sede::with('coordinador')->get();

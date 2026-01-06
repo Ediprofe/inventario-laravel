@@ -9,8 +9,14 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Illuminate\Database\Eloquent\Builder;
 
-class ItemsExport implements FromQuery, WithHeadings, WithMapping, WithTitle
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use App\Exports\Concerns\DefaultTableStyles;
+
+class ItemsExport implements FromQuery, WithHeadings, WithMapping, WithTitle, WithStyles, ShouldAutoSize
 {
+    use DefaultTableStyles;
+
     protected $filters;
 
     public function __construct(array $filters = [])
