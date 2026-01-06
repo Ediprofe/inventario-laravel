@@ -11,8 +11,56 @@ use App\Models\Articulo;
 use App\Enums\EstadoFisico;
 use Illuminate\Support\Collection;
 
-class ReportesInventario extends Page
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
+use Filament\Tables;
+use Illuminate\Database\Eloquent\Builder;
+
+class ReportesInventario extends Page implements HasForms, HasTable
 {
+    use InteractsWithForms;
+    use InteractsWithTable;
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->query(function (Builder $query) {
+                // If inactive tab or no filter, return empty
+                if ($this->activeTab === 'ubicacion' && $this->ubicacionId) {
+                    return Item::query()->where('ubicacion_id', $this->ubicacionId);
+                }
+                if ($this->activeTab === 'responsable' && $this->responsableFilterId) {
+                    return Item::query()->where('responsable_id', $this->responsableFilterId);
+                }
+                return Item::query()->whereRaw('1 = 0');
+            })
+            ->columns([
+                Tables\Columns\TextColumn::make('placa')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('articulo.nombre')
+                    ->label('Artículo')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('marca')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('serial')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('estado')
+                    ->badge(),
+                Tables\Columns\TextColumn::make('responsable.nombre_completo')
+                    ->label('Responsable')
+                    ->hidden(fn () => $this->activeTab === 'responsable'), // Hide if redundant
+                Tables\Columns\TextColumn::make('ubicacion.nombre')
+                    ->label('Ubicación')
+                    ->description(fn (Item $item) => $item->ubicacion->codigo)
+                    ->hidden(fn () => $this->activeTab === 'ubicacion'), // Hide if redundant
+            ])
+            ->summary(null); // No summary needed in footer
+    }
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
     protected static ?string $navigationLabel = 'Reportes de Inventario';
     protected static ?string $title = 'Reportes y Analítica';

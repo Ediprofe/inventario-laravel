@@ -111,6 +111,13 @@
             @else
                 <div class="text-center p-12 text-gray-500">Seleccione una ubicación para ver los detalles.</div>
             @endif
+
+            @if($this->currentUbicacion)
+            <div class="mt-8">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Detalle de Items</h3>
+                {{ $this->table }}
+            </div>
+            @endif
         </div>
     @endif
 
@@ -184,6 +191,11 @@
                             @endif
                         </tbody>
                     </table>
+                </div>
+
+                <div class="mt-8">
+                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Detalle de Items Asignados</h3>
+                     {{ $this->table }}
                 </div>
             @endif
         </div>
