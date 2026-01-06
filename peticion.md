@@ -1,21 +1,11 @@
-# Inventario por ubicación
+# Mantener solo modo oscuro
 
-En la tabla de detalle de inventario por ubicación quiero que los campos sean:
+Quiero que solo se muestre el modo oscuro en la aplicación.
 
-Artículo, Cantidad, Estado y Placa. Que en ese estado se haga un desglose según los diferentes estados, puede ser algo tipo: bueno: 10, regular: 5, malo: 2, sin estado: 1, de acuerdo al estado de cada uno de los ítems de ese artículo. 
+# Opción de navegar cuando se abren modales
 
-También quiero que vayas pensando sobre cómo ide metiendo los datos de la institución educativa respectiva, para que sea cuestión de solo meter logo, encabezado o lo que toque de dicha institución educativa y el código sea aplicable a cualquier institución educativa.
+Quiero que por ejemplo cuando se abre un modal para crear un nuevo ítem o para editar un ítem ya existente, que sea fácilmente navegable la aplicación, con un botón de reresar o algo no sé más cómodo. Revisa esto en la aplicación a nivel general por favor, y también en las demás secciones. Hazlo como el lider tech que cuida la escalabilidd, robustex y mantenibilidad del código.
 
-# Inventario por responsable
+# Opción para agregar un lote de ítems
 
-En la tabla de responsable quiero que los campos sean:
-
-Artículo, Ubicación (con código y nombre de ubicación), Cantidad y Estado, con el mismo desglose para el estado que se hace en la tabla de inventario por ubicación.
-
-# Nota general
-
-Ten en cuenta que los ítems de inventario que se usarán para este consolidado son los que se encuentran con el campo "Disponibilidad" marcado como "En uso". 
-
-# A tener en cuenta
-
-Recomienda metodología de trabajo, librería a usar y de una vez te apruebo o no. Ten en ceunta las buenas prácticas que hacen código, legible, mantenible y escalable. Primero quiero la propuesta y luego implementas, cuando yo te apruebe.
+Quiero que busques la manera de ingresar al sistema un lote de ítems, por ejemplo 10 portátiles, y que tenga la posibilidad de ingresar la cantidad, 10, y que de una vez se pueda por ejemplo agregar los datos de esos portátiles, como placa, marca, serial, etc...Hazlo de forma inteligente, que sea lo más simple posible, robusto, escalable y mantenible.

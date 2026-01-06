@@ -57,6 +57,99 @@ class ListItems extends ListRecords
                 ->action(function () {
                     return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AuditReportExport(), 'Inventario_Institucional-' . date('Y-m-d') . '.xlsx');
                 }),
+            Actions\Action::make('batch_create')
+                ->label('Agregar Lote')
+                ->color('warning')
+                ->icon('heroicon-o-squares-plus')
+                ->modalWidth('5xl')
+                ->form([
+                    \Filament\Forms\Components\Section::make('Datos Comunes')
+                        ->description('Estos datos se aplicarán a todos los ítems del lote')
+                        ->columns(3)
+                        ->schema([
+                            \Filament\Forms\Components\Select::make('sede_id')
+                                ->label('Sede')
+                                ->options(\App\Models\Sede::pluck('nombre', 'id'))
+                                ->required()
+                                ->live()
+                                ->afterStateUpdated(fn (\Filament\Forms\Set $set) => $set('ubicacion_id', null)),
+                            \Filament\Forms\Components\Select::make('ubicacion_id')
+                                ->label('Ubicación')
+                                ->options(fn (\Filament\Forms\Get $get) => 
+                                    \App\Models\Ubicacion::where('sede_id', $get('sede_id'))
+                                        ->get()
+                                        ->mapWithKeys(fn ($ubi) => [$ubi->id => $ubi->codigo . ' - ' . $ubi->nombre])
+                                )
+                                ->required()
+                                ->searchable(),
+                            \Filament\Forms\Components\Select::make('articulo_id')
+                                ->label('Artículo')
+                                ->options(\App\Models\Articulo::pluck('nombre', 'id'))
+                                ->required()
+                                ->searchable(),
+                            \Filament\Forms\Components\Select::make('responsable_id')
+                                ->label('Responsable')
+                                ->options(\App\Models\Responsable::all()->pluck('nombre_completo', 'id'))
+                                ->searchable(),
+                            \Filament\Forms\Components\Select::make('estado')
+                                ->label('Estado')
+                                ->options(\App\Enums\EstadoFisico::class)
+                                ->required(),
+                            \Filament\Forms\Components\Select::make('disponibilidad')
+                                ->label('Disponibilidad')
+                                ->options(\App\Enums\Disponibilidad::class)
+                                ->default('en_uso')
+                                ->required(),
+                        ]),
+                    \Filament\Forms\Components\Section::make('Ítems Individuales')
+                        ->description('Ingresa los datos únicos de cada ítem')
+                        ->schema([
+                            \Filament\Forms\Components\Repeater::make('items')
+                                ->label('')
+                                ->columns(4)
+                                ->defaultItems(1)
+                                ->addActionLabel('+ Agregar otro ítem')
+                                ->schema([
+                                    \Filament\Forms\Components\TextInput::make('placa')
+                                        ->label('Placa'),
+                                    \Filament\Forms\Components\TextInput::make('marca')
+                                        ->label('Marca'),
+                                    \Filament\Forms\Components\TextInput::make('serial')
+                                        ->label('Serial'),
+                                    \Filament\Forms\Components\TextInput::make('observaciones')
+                                        ->label('Observaciones'),
+                                ])
+                                ->required()
+                                ->minItems(1),
+                        ]),
+                ])
+                ->action(function (array $data) {
+                    $commonData = [
+                        'sede_id' => $data['sede_id'],
+                        'ubicacion_id' => $data['ubicacion_id'],
+                        'articulo_id' => $data['articulo_id'],
+                        'responsable_id' => $data['responsable_id'],
+                        'estado' => $data['estado'],
+                        'disponibilidad' => $data['disponibilidad'],
+                    ];
+                    
+                    $count = 0;
+                    foreach ($data['items'] as $itemData) {
+                        \App\Models\Item::create(array_merge($commonData, [
+                            'placa' => $itemData['placa'] ?? null,
+                            'marca' => $itemData['marca'] ?? null,
+                            'serial' => $itemData['serial'] ?? null,
+                            'observaciones' => $itemData['observaciones'] ?? null,
+                        ]));
+                        $count++;
+                    }
+                    
+                    \Filament\Notifications\Notification::make()
+                        ->title('Lote Creado')
+                        ->body("Se crearon {$count} ítems correctamente.")
+                        ->success()
+                        ->send();
+                }),
         ];
     }
 }

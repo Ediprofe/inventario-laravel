@@ -43,8 +43,10 @@ class ReportesInventario extends Page implements HasForms, HasTable
                 return Item::query()->whereRaw('1 = 0');
             })
             ->actions([
-                Tables\Actions\EditAction::make()
-                    ->form(fn (Form $form) => ItemResource::form($form)),
+                Tables\Actions\Action::make('edit')
+                    ->label('Editar')
+                    ->icon('heroicon-o-pencil')
+                    ->url(fn ($record) => ItemResource::getUrl('edit', ['record' => $record])),
             ]);
     }
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
@@ -144,17 +146,18 @@ class ReportesInventario extends Page implements HasForms, HasTable
     {
         if (!$this->responsableFilterId) return [];
         
-        // Detailed list: Articulo | Ubicacion | Cantidad
+        // Resumen: Cód. Ubicación | Ubicación | Artículo | Cantidad
         return Item::where('responsable_id', $this->responsableFilterId)
             ->selectRaw('articulo_id, ubicacion_id, count(*) as total')
             ->with(['articulo', 'ubicacion'])
             ->groupBy('articulo_id', 'ubicacion_id')
+            ->orderBy('ubicacion_id') // Group visually by location
             ->get()
             ->map(function ($row) {
                 return [
-                    'articulo' => $row->articulo->nombre ?? '?',
-                    'ubicacion' => $row->ubicacion->nombre ?? '?',
                     'codigo_ubicacion' => $row->ubicacion->codigo ?? '',
+                    'ubicacion' => $row->ubicacion->nombre ?? '?',
+                    'articulo' => $row->articulo->nombre ?? '?',
                     'cantidad' => $row->total,
                 ];
             });

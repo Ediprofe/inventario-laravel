@@ -97,6 +97,14 @@ class ItemResource extends Resource
                 Tables\Columns\TextColumn::make('disponibilidad')
                     ->badge()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('descripcion')
+                    ->limit(30)
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('observaciones')
+                    ->limit(30)
+                    ->searchable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()

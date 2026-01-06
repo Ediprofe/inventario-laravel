@@ -26,10 +26,9 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 30%">Artículo</th>
-                <th style="width: 10%">Cant.</th>
-                <th style="width: 35%">Estado</th>
-                <th style="width: 25%">Placas</th>
+                <th style="width: 40%">Artículo</th>
+                <th style="width: 15%">Cantidad</th>
+                <th style="width: 45%">Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -42,19 +41,12 @@
                             {{ $estado['label'] }}: {{ $estado['count'] }}@if(!$loop->last), @endif
                         @endforeach
                     </td>
-                    <td class="placas">
-                        @if($item['placas']->count() > 0)
-                            {{ $item['placas']->implode(', ') }}
-                        @else
-                            -
-                        @endif
-                    </td>
                 </tr>
             @endforeach
             <tr class="total-row">
                 <td>TOTAL</td>
                 <td style="text-align: center">{{ $data['total'] }}</td>
-                <td colspan="2"></td>
+                <td></td>
             </tr>
         </tbody>
     </table>

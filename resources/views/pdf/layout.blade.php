@@ -4,6 +4,9 @@
     <meta charset="utf-8">
     <title>@yield('title', 'Inventario')</title>
     <style>
+        @page {
+            margin: 1.5cm;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -14,6 +17,8 @@
             font-size: 11px;
             line-height: 1.4;
             color: #333;
+            /* Ensure content doesn't hit the absolute edge */
+            padding: 0 10px; 
         }
         .header {
             text-align: center;
@@ -72,18 +77,29 @@
             border-top: 1px solid #ccc;
             padding-top: 15px;
         }
-        .signature-line {
-            margin-top: 50px;
-            display: flex;
-            justify-content: space-between;
+        .signature-container {
+            width: 100%;
+            margin-top: 60px;
         }
-        .signature-box {
-            width: 45%;
+        .signature-table {
+            width: 100%;
+            border: none;
+        }
+        .signature-table td {
+            border: none;
+            width: 50%;
             text-align: center;
+            padding: 0 20px;
+            vertical-align: top;
         }
-        .signature-box .line {
+        .signature-line {
             border-top: 1px solid #333;
             margin-bottom: 5px;
+            width: 100%;
+        }
+        .signature-label {
+            font-size: 10px;
+            color: #333;
         }
         .total-row {
             font-weight: bold;
@@ -92,12 +108,6 @@
         .estado-breakdown {
             font-size: 10px;
             color: #555;
-        }
-        .placas {
-            font-size: 9px;
-            color: #666;
-            max-width: 150px;
-            word-wrap: break-word;
         }
         .fecha-generacion {
             text-align: right;
@@ -125,15 +135,19 @@
     @yield('content')
 
     <div class="footer">
-        <div class="signature-line">
-            <div class="signature-box">
-                <div class="line"></div>
-                <div>Firma del Responsable</div>
-            </div>
-            <div class="signature-box">
-                <div class="line"></div>
-                <div>Firma de quien entrega / verifica</div>
-            </div>
+        <div class="signature-container">
+            <table class="signature-table">
+                <tr>
+                    <td>
+                        <div class="signature-line"></div>
+                        <div class="signature-label">Firma del Responsable</div>
+                    </td>
+                    <td>
+                        <div class="signature-line"></div>
+                        <div class="signature-label">Firma de quien entrega / verifica</div>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 </body>

@@ -56,19 +56,22 @@ class ResetImportService
         DB::beginTransaction();
         
         try {
-            // 2. Clear Items (Reset)
-            // We truncate items and history. Catalogs are kept/updated.
-            // Disable foreign key checks for truncate? Or just delete()
-            // Delete is safer for cascading if configured, but we want to wipe items.
-            Schema::disableForeignKeyConstraints(); // if using SQLite/MySQL specific
-            // In generic Laravel:
-            DB::statement('PRAGMA foreign_keys = OFF'); // SQLite
-            // For Postgres: SET session_replication_role = 'replica'; ...
-            // Let's use Eloquent delete to be DB agnostic and safe
-            HistorialMovimiento::query()->delete();
-            Item::query()->delete();
-            // DB::statement('PRAGMA foreign_keys = ON'); 
-            // Re-enable validation later.
+            // 2. Clear ALL Data (Hard Reset)
+            // Disable FK checks to allow truncation
+            Schema::disableForeignKeyConstraints();
+            
+            Item::truncate();
+            HistorialMovimiento::truncate();
+            // Also truncate catalogs to ensure we only have what is in the Excel
+            // avoiding ghost records like 'Edilberto Antonio...' when Excel has 'Edilberto...'
+            Ubicacion::truncate();
+            Responsable::truncate();
+            Articulo::truncate();
+            Sede::truncate();
+            
+            Schema::enableForeignKeyConstraints();
+            
+            $this->log[] = "Base de datos reseteada completamente (Items y Catálogos eliminados).";
             
             // 3. Process Catalogs
             $this->processSedes($sheets['Sedes']);
