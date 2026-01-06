@@ -120,6 +120,52 @@ class ItemResource extends Resource
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('cambiar_ubicacion')
+                        ->label('Cambiar Ubicación')
+                        ->icon('heroicon-o-arrow-right-circle')
+                        ->color('warning')
+                        ->form([
+                            Forms\Components\Select::make('sede_id')
+                                ->label('Nueva Sede')
+                                ->options(\App\Models\Sede::pluck('nombre', 'id'))
+                                ->required()
+                                ->live()
+                                ->afterStateUpdated(fn (Forms\Set $set) => $set('ubicacion_id', null)),
+                            Forms\Components\Select::make('ubicacion_id')
+                                ->label('Nueva Ubicación')
+                                ->options(fn (Forms\Get $get) => 
+                                    \App\Models\Ubicacion::where('sede_id', $get('sede_id'))
+                                        ->get()
+                                        ->mapWithKeys(fn ($ubi) => [$ubi->id => $ubi->codigo . ' - ' . $ubi->nombre])
+                                )
+                                ->required()
+                                ->searchable(),
+                            Forms\Components\Toggle::make('asignar_responsable')
+                                ->label('Asignar también el responsable de la ubicación destino')
+                                ->default(true)
+                                ->helperText('Si activa, los ítems quedarán a cargo del responsable asignado a la nueva ubicación.'),
+                        ])
+                        ->action(function (\Illuminate\Support\Collection $records, array $data) {
+                            $ubicacion = \App\Models\Ubicacion::find($data['ubicacion_id']);
+                            
+                            $updateData = [
+                                'sede_id' => $data['sede_id'],
+                                'ubicacion_id' => $data['ubicacion_id'],
+                            ];
+                            
+                            if ($data['asignar_responsable'] && $ubicacion?->responsable_id) {
+                                $updateData['responsable_id'] = $ubicacion->responsable_id;
+                            }
+                            
+                            $records->each(fn ($item) => $item->update($updateData));
+                            
+                            \Filament\Notifications\Notification::make()
+                                ->title('Ubicación actualizada')
+                                ->body(count($records) . ' ítem(s) movido(s) a ' . $ubicacion->nombre)
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
     }

@@ -18,6 +18,8 @@ class UbicacionResource extends Resource
     protected static ?string $model = Ubicacion::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    
+    protected static ?string $pluralModelLabel = 'Ubicaciones';
 
     public static function form(Form $form): Form
     {
@@ -84,20 +86,63 @@ class UbicacionResource extends Resource
                     ->label('Reasignar Todo')
                     ->icon('heroicon-o-arrow-path-rounded-square')
                     ->color('warning')
-                    ->requiresConfirmation()
                     ->modalHeading('Transferir Inventario de Ubicación')
-                    ->modalDescription('Esto cambiará el responsable de TODOS los ítems en esta ubicación. ¿Estás seguro?')
-                    ->form([
-                        Forms\Components\Select::make('nuevo_responsable_id')
-                            ->label('Nuevo Responsable')
-                            ->options(\App\Models\Responsable::all()->pluck('nombre_completo', 'id'))
-                            ->searchable()
-                            ->required(),
-                    ])
+                    ->form(function (Ubicacion $record) {
+                        // Check for laptops in this location
+                        $portatiles = $record->items()
+                            ->whereHas('articulo', fn ($q) => $q->where('nombre', 'like', '%portatil%')
+                                ->orWhere('nombre', 'like', '%portátil%')
+                                ->orWhere('nombre', 'like', '%laptop%'))
+                            ->with(['articulo', 'responsable'])
+                            ->get();
+                        
+                        $formFields = [
+                            Forms\Components\Select::make('nuevo_responsable_id')
+                                ->label('Nuevo Responsable')
+                                ->options(\App\Models\Responsable::all()->pluck('nombre_completo', 'id'))
+                                ->searchable()
+                                ->required(),
+                        ];
+                        
+                        if ($portatiles->count() > 0) {
+                            $formFields[] = Forms\Components\Placeholder::make('aviso_portatiles')
+                                ->label('')
+                                ->content('⚠️ Se detectaron ' . $portatiles->count() . ' portátiles en esta ubicación. Seleccione cuáles desea transferir:');
+                            
+                            $formFields[] = Forms\Components\CheckboxList::make('portatiles_a_transferir')
+                                ->label('Portátiles')
+                                ->options(
+                                    $portatiles->mapWithKeys(fn ($item) => [
+                                        $item->id => $item->articulo->nombre . 
+                                            ' | Placa: ' . ($item->placa ?: 'N/A') . 
+                                            ' | Resp: ' . ($item->responsable?->nombre_completo ?: 'Sin asignar')
+                                    ])->toArray()
+                                )
+                                ->columns(1)
+                                ->bulkToggleable()
+                                ->helperText('Los portátiles NO seleccionados mantendrán su responsable actual.');
+                        }
+                        
+                        return $formFields;
+                    })
                     ->action(function (Ubicacion $record, array $data) {
-                        $count = $record->items()->update([
-                            'responsable_id' => $data['nuevo_responsable_id']
-                        ]);
+                        // Get IDs of laptops to EXCLUDE (all laptops minus selected ones)
+                        $todosPortatiles = $record->items()
+                            ->whereHas('articulo', fn ($q) => $q->where('nombre', 'like', '%portatil%')
+                                ->orWhere('nombre', 'like', '%portátil%')
+                                ->orWhere('nombre', 'like', '%laptop%'))
+                            ->pluck('id')
+                            ->toArray();
+                        
+                        $portatilesATransferir = $data['portatiles_a_transferir'] ?? [];
+                        $portatilesAExcluir = array_diff($todosPortatiles, $portatilesATransferir);
+                        
+                        // Update all items EXCEPT excluded laptops
+                        $count = $record->items()
+                            ->whereNotIn('id', $portatilesAExcluir)
+                            ->update([
+                                'responsable_id' => $data['nuevo_responsable_id']
+                            ]);
 
                         \Filament\Notifications\Notification::make()
                             ->title("Se transfirieron {$count} ítems")
