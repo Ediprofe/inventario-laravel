@@ -15,8 +15,11 @@ trait DefaultTableStyles
         $highestRow = $sheet->getHighestRow();
         $range = 'A1:' . $highestColumn . $highestRow;
 
-        // Enable AutoFilter for the whole range
+        // Enable AutoFilter
         $sheet->setAutoFilter($range);
+        
+        // Freeze Top Row
+        $sheet->freezePane('A2');
 
         return [
             // Header: Bold, Gray Background, White Text

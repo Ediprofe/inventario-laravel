@@ -11,11 +11,20 @@ use Illuminate\Database\Eloquent\Builder;
 
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use App\Exports\Concerns\DefaultTableStyles;
 
-class ItemsExport implements FromQuery, WithHeadings, WithMapping, WithTitle, WithStyles, ShouldAutoSize
+class ItemsExport implements FromQuery, WithHeadings, WithMapping, WithTitle, WithStyles, ShouldAutoSize, WithColumnWidths
 {
     use DefaultTableStyles;
+
+    public function columnWidths(): array
+    {
+        return [
+            'J' => 50, // Descripción
+            'K' => 50, // Observaciones
+        ];
+    }
 
     protected $filters;
 
