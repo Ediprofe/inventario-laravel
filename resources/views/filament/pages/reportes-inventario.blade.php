@@ -106,6 +106,7 @@
                             <tr>
                                 <th class="px-6 py-3 font-medium">Artículo</th>
                                 <th class="px-6 py-3 font-medium text-right">Cantidad</th>
+                                <th class="px-6 py-3 font-medium">Estado</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -117,11 +118,26 @@
                                             {{ $row['cantidad'] }}
                                         </span>
                                     </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach($row['breakdown'] as $b)
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium
+                                                    {{ match($b['color']) {
+                                                        'success' => 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+                                                        'warning' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
+                                                        'danger'  => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+                                                        default   => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                                                    } }}">
+                                                    {{ $b['label'] }}: {{ $b['qty'] }}
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                    </td>
                                 </tr>
                             @endforeach
                             @if(count($this->itemsPorUbicacion) === 0)
                                 <tr>
-                                    <td colspan="2" class="px-6 py-12 text-center text-gray-500">No hay items en esta ubicación.</td>
+                                    <td colspan="3" class="px-6 py-12 text-center text-gray-500">No hay items en esta ubicación.</td>
                                 </tr>
                             @endif
                         </tbody>

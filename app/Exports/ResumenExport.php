@@ -61,10 +61,50 @@ class ResumenExport implements FromArray, WithTitle, WithStyles, ShouldAutoSize
 
     public function styles(Worksheet $sheet): array
     {
-        // Style the headers
+        // Resumen Title
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-        $sheet->getStyle('A4')->getFont()->setBold(true);
-        $sheet->getStyle('A5:B5')->getFont()->setBold(true);
+        
+        // Define header rows for each section
+        $headerRows = [5, 12, 23]; // Adjust these based on where the tables start
+        
+        // Default Header Style (Gray 600 Background, White Text)
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['argb' => 'FFFFFFFF'],
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'FF4B5563'], // Tailwind Gray-600
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ];
+
+        // Apply style to known header rows cells
+        // Note: The specific row numbers might shift if content above changes dynamically,
+        // but for this fixed structure:
+        // Row 5 is Sede Table Header
+        $sheet->getStyle('A5:B5')->applyFromArray($headerStyle);
+        
+        // Find dynamically where the other tables start to apply styles correctly
+        // Or simply search for cells containing "Estado" or "Disponibilidad"
+        
+        // Helper to find and style headers dynamically
+        foreach ($sheet->getRowIterator() as $row) {
+            $cellValue = (string) $sheet->getCell('A' . $row->getRowIndex())->getValue();
+            
+            // Checking exact table headers
+            if ($cellValue === 'Sede' || $cellValue === 'Estado' || $cellValue === 'Disponibilidad') {
+                 $sheet->getStyle('A' . $row->getRowIndex() . ':B' . $row->getRowIndex())->applyFromArray($headerStyle);
+            }
+        }
         
         return [];
     }

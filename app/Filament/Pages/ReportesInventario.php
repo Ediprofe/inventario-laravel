@@ -131,18 +131,39 @@ class ReportesInventario extends Page implements HasForms, HasTable
     {
         if (!$this->ubicacionId) return [];
         
-        return Item::enUso()
+        // Step 1: Get raw data with estado breakdown
+        $rawData = Item::enUso()
             ->where('ubicacion_id', $this->ubicacionId)
-            ->selectRaw('articulo_id, count(*) as total')
+            ->selectRaw('articulo_id, estado, count(*) as total')
             ->with('articulo')
-            ->groupBy('articulo_id')
-            ->get()
-            ->map(function ($row) {
-                return [
-                    'articulo' => $row->articulo->nombre ?? 'Desconocido',
-                    'cantidad' => $row->total,
-                ];
-            });
+            ->groupBy('articulo_id', 'estado')
+            ->get();
+        
+        // Step 2: Group by articulo and build breakdown
+        $grouped = $rawData->groupBy('articulo_id');
+        
+        return $grouped->map(function ($items, $articuloId) {
+            $firstItem = $items->first();
+            $totalQty = $items->sum('total');
+            
+            $breakdown = [];
+            foreach (EstadoFisico::cases() as $estado) {
+                $qty = $items->where('estado', $estado)->sum('total');
+                if ($qty > 0) {
+                    $breakdown[] = [
+                        'label' => $estado->getLabel(),
+                        'color' => $this->getColorForEstado($estado),
+                        'qty' => $qty,
+                    ];
+                }
+            }
+            
+            return [
+                'articulo' => $firstItem->articulo->nombre ?? 'Desconocido',
+                'cantidad' => $totalQty,
+                'breakdown' => $breakdown,
+            ];
+        })->values();
     }
 
     public function getTotalItemsUbicacionProperty()

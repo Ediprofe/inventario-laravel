@@ -54,9 +54,23 @@ class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, Shoul
         // Metadata (Rows 2-3)
         $sheet->getStyle('A2:A3')->getFont()->setBold(true);
         
-        // Table Header Style (Row 5)
-        $sheet->getStyle('5')->getFont()->setBold(true)->getColor()->setARGB('FFFFFF');
-        $sheet->getStyle('5')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('4B5563'); // Gray-600
+        // Table Header Style (Row 5) - Same as DefaultTableStyles
+        $headerStyle = [
+            'font' => [
+                'bold' => true,
+                'color' => ['argb' => 'FFFFFFFF'], // White text
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['argb' => 'FF4B5563'], // Tailwind Gray-600
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            ],
+        ];
+        
+        $highestColumn = $sheet->getHighestColumn();
+        $sheet->getStyle('A5:' . $highestColumn . '5')->applyFromArray($headerStyle);
         
         // Borders for table (Row 5 onwards)
         $lastRow = $sheet->getHighestRow();
