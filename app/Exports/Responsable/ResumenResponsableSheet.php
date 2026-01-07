@@ -75,9 +75,8 @@ class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, Shoul
 
     public function array(): array
     {
-        // Logic similar to getItemsPorResponsableProperty in Page, but aggregated
-        return Item::where('responsable_id', $this->responsableId)
-            ->where('disponibilidad', Disponibilidad::EN_USO)
+        return Item::enUso()
+            ->where('responsable_id', $this->responsableId)
             ->selectRaw('articulo_id, ubicacion_id, count(*) as total')
             ->with(['articulo', 'ubicacion'])
             ->groupBy('articulo_id', 'ubicacion_id')

@@ -37,6 +37,7 @@ class PorResponsableExport implements FromArray, WithTitle, WithStyles, ShouldAu
             ->leftJoin('responsables', 'items.responsable_id', '=', 'responsables.id')
             ->join('articulos', 'items.articulo_id', '=', 'articulos.id')
             ->join('ubicacions', 'items.ubicacion_id', '=', 'ubicacions.id')
+            ->where('items.disponibilidad', \App\Enums\Disponibilidad::EN_USO)
             ->groupBy('responsable_nombre', 'articulos.nombre', 'ubicacions.nombre', 'ubicacions.codigo')
             ->orderBy('responsable_nombre')
             ->orderBy('articulos.nombre')

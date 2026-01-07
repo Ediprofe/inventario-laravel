@@ -37,6 +37,7 @@ class PorUbicacionExport implements FromArray, WithTitle, WithStyles, ShouldAuto
             ->join('ubicacions', 'items.ubicacion_id', '=', 'ubicacions.id')
             ->join('sedes', 'items.sede_id', '=', 'sedes.id')
             ->join('articulos', 'items.articulo_id', '=', 'articulos.id')
+            ->where('items.disponibilidad', \App\Enums\Disponibilidad::EN_USO)
             ->groupBy('sedes.nombre', 'ubicacions.codigo', 'ubicacions.nombre', 'articulos.nombre')
             ->orderBy('sedes.nombre')
             ->orderBy('ubicacions.codigo')

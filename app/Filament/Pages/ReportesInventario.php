@@ -33,12 +33,12 @@ class ReportesInventario extends Page implements HasForms, HasTable
         // Apply our specific context filters and fix EditAction form
         return $table
             ->query(function (Builder $query) {
-                // If inactive tab or no filter, return empty to be safe
+                // All queries are filtered by disponibilidad = 'en_uso' using scope
                 if ($this->activeTab === 'ubicacion' && $this->ubicacionId) {
-                    return Item::query()->where('ubicacion_id', $this->ubicacionId);
+                    return Item::enUso()->where('ubicacion_id', $this->ubicacionId);
                 }
                 if ($this->activeTab === 'responsable' && $this->responsableFilterId) {
-                    return Item::query()->where('responsable_id', $this->responsableFilterId);
+                    return Item::enUso()->where('responsable_id', $this->responsableFilterId);
                 }
                 return Item::query()->whereRaw('1 = 0');
             })
@@ -47,7 +47,12 @@ class ReportesInventario extends Page implements HasForms, HasTable
                     ->label('Editar')
                     ->icon('heroicon-o-pencil')
                     ->url(fn ($record) => ItemResource::getUrl('edit', ['record' => $record])),
-            ]);
+            ])
+            ->columns(
+                collect($table->getColumns())
+                    ->reject(fn ($column) => $column->getName() === 'disponibilidad')
+                    ->toArray()
+            );
     }
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
     protected static ?string $navigationLabel = 'Reportes de Inventario';
@@ -116,7 +121,8 @@ class ReportesInventario extends Page implements HasForms, HasTable
     {
         if (!$this->ubicacionId) return [];
         
-        return Item::where('ubicacion_id', $this->ubicacionId)
+        return Item::enUso()
+            ->where('ubicacion_id', $this->ubicacionId)
             ->selectRaw('articulo_id, count(*) as total')
             ->with('articulo')
             ->groupBy('articulo_id')
@@ -147,7 +153,8 @@ class ReportesInventario extends Page implements HasForms, HasTable
         if (!$this->responsableFilterId) return [];
         
         // Resumen: Cód. Ubicación | Ubicación | Artículo | Cantidad
-        return Item::where('responsable_id', $this->responsableFilterId)
+        return Item::enUso()
+            ->where('responsable_id', $this->responsableFilterId)
             ->selectRaw('articulo_id, ubicacion_id, count(*) as total')
             ->with(['articulo', 'ubicacion'])
             ->groupBy('articulo_id', 'ubicacion_id')
@@ -184,12 +191,8 @@ class ReportesInventario extends Page implements HasForms, HasTable
         }
         $articulos = $articulosQuery->get();
         
-        // Optimization: Fetch aggregated data in one query
-        $query = Item::query();
-        
-        if ($this->disponibilidadFilter) {
-            $query->where('disponibilidad', $this->disponibilidadFilter);
-        }
+        // Optimization: Fetch aggregated data in one query, always filtered by en_uso
+        $query = Item::enUso();
         
         // If sorting by article, we can also optimize the item query to only fetch relevant items
         if ($this->articuloFilterId) {

@@ -35,15 +35,7 @@ class ItemsExport implements FromQuery, WithHeadings, WithMapping, WithTitle, Wi
 
     public function query()
     {
-        $query = Item::query()->with(['sede', 'ubicacion', 'articulo', 'responsable']);
-        
-        // Apply filters if passed (e.g. from Filament)
-        // Note: Filament filters are often complex. 
-        // We might just export ALL items for the "Backup" purpose if filters are empty or if strictly requested "Backup".
-        // The implementation_plan says "Export maintains same format".
-        // If $filters provided, apply them.
-        
-        return $query;
+        return Item::enUso()->with(['sede', 'ubicacion', 'articulo', 'responsable']);
     }
 
     public function headings(): array

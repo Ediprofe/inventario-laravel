@@ -39,8 +39,8 @@ class DetalleResponsableSheet implements FromArray, WithTitle, WithStyles, Shoul
 
     public function array(): array
     {
-        return Item::where('responsable_id', $this->responsableId)
-            ->where('disponibilidad', \App\Enums\Disponibilidad::EN_USO)
+        return Item::enUso()
+            ->where('responsable_id', $this->responsableId)
             ->with(['articulo', 'ubicacion', 'sede'])
             ->get()
             ->map(function ($item) {

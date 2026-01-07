@@ -152,4 +152,23 @@ class ListItems extends ListRecords
                 }),
         ];
     }
+
+    /**
+     * Apply default en_uso filter when disponibilidad filter is not explicitly set.
+     * This ensures consistency with Reportes which always filter by en_uso.
+     */
+    protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getTableQuery();
+        
+        // Check if the disponibilidad filter is explicitly set in the URL
+        $disponibilidadFilter = $this->tableFilters['disponibilidad']['value'] ?? null;
+        
+        // If not set (null) or empty, apply default en_uso filter
+        if (empty($disponibilidadFilter)) {
+            $query->where('disponibilidad', \App\Enums\Disponibilidad::EN_USO);
+        }
+        
+        return $query;
+    }
 }

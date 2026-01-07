@@ -120,7 +120,8 @@ class ItemResource extends Resource
                 Tables\Filters\SelectFilter::make('estado')
                     ->options(\App\Enums\EstadoFisico::class),
                 Tables\Filters\SelectFilter::make('disponibilidad')
-                    ->options(\App\Enums\Disponibilidad::class),
+                    ->options(\App\Enums\Disponibilidad::class)
+                    ->default('en_uso'), // Pre-selected by default, but user can change
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

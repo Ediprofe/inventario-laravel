@@ -53,4 +53,13 @@ class Item extends Model
     {
         return $this->hasMany(HistorialMovimiento::class);
     }
+
+    /**
+     * Scope: Only items with disponibilidad = 'en_uso'
+     * Use: Item::enUso()->...
+     */
+    public function scopeEnUso($query)
+    {
+        return $query->where('disponibilidad', Disponibilidad::EN_USO);
+    }
 }

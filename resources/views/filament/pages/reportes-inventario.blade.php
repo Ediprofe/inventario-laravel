@@ -124,7 +124,12 @@
 
             @if($this->currentUbicacion)
             <div class="mt-8">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Detalle de Items</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalle de Items</h3>
+                    <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full dark:bg-blue-900/30 dark:text-blue-300">
+                        Solo ítems "En Uso"
+                    </span>
+                </div>
                 {{ $this->table }}
             </div>
             @endif
@@ -213,7 +218,12 @@
                 </div>
 
                 <div class="mt-8">
-                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Detalle de Items Asignados</h3>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalle de Items Asignados</h3>
+                        <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full dark:bg-blue-900/30 dark:text-blue-300">
+                            Solo ítems "En Uso"
+                        </span>
+                    </div>
                      {{ $this->table }}
                 </div>
             @endif
@@ -226,17 +236,14 @@
             {{-- Filters --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
                  
-                 {{-- Availability Filter --}}
+                 {{-- Info Note: Only En Uso items --}}
                  <div class="space-y-1">
                      <label class="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-2">
-                        <x-heroicon-o-funnel class="w-4 h-4" /> Disponibilidad
+                        <x-heroicon-o-information-circle class="w-4 h-4 text-blue-500" /> Nota
                      </label>
-                     <select wire:model.live="disponibilidadFilter" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 dark:bg-gray-800 dark:border-gray-600">
-                        <option value="">Todas</option>
-                        @foreach(\App\Enums\Disponibilidad::cases() as $disp)
-                            <option value="{{ $disp->value }}">{{ $disp->getLabel() }}</option>
-                        @endforeach
-                     </select>
+                     <div class="px-3 py-2 bg-blue-50 text-blue-700 text-sm rounded-lg dark:bg-blue-900/30 dark:text-blue-300">
+                         Solo se muestran ítems con disponibilidad <strong>"En Uso"</strong>.
+                     </div>
                  </div>
 
                  {{-- Article Filter --}}
