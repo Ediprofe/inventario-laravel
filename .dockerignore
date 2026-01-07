@@ -1,0 +1,12 @@
+.git
+.github
+vendor
+node_modules
+.env
+.env.testing
+storage/*.sqlite
+tests
+docker-compose.yml
+Dockerfile
+fly.toml
+.dockerignore
