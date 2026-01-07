@@ -28,12 +28,17 @@ Route::middleware('auth')->group(function () {
 Route::middleware('auth')->prefix('reportes-pdf')->group(function () {
     Route::get('/ubicacion/{ubicacionId}', [\App\Http\Controllers\ReportesPdfController::class, 'ubicacion'])
         ->name('reportes.pdf.ubicacion');
+    Route::post('/ubicacion/{ubicacionId}/enviar', [\App\Http\Controllers\ReportesPdfController::class, 'enviarUbicacion'])
+        ->name('reportes.pdf.ubicacion.enviar');
 });
 
 // Excel Reports
 Route::middleware('auth')->prefix('reportes-excel')->group(function () {
     Route::get('/responsable/{responsableId}', [\App\Http\Controllers\ReportesExcelController::class, 'responsable'])
         ->name('reportes.excel.responsable');
+    Route::post('/responsable/{responsableId}/enviar', [\App\Http\Controllers\ReportesExcelController::class, 'enviarResponsable'])
+        ->name('reportes.excel.responsable.enviar');
 });
 
 require __DIR__.'/auth.php';
+

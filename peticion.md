@@ -1,9 +1,7 @@
-![alt text](image-3.png)
-http://127.0.0.1:8000/admin/reportes-inventario
+1. Ninguno, o sea en mi colegio el instticuinal es con gmail y dominio del colegio, pero en el proyecto no tengo servicio de correo todavía, así tipo con laravel o algo así.
 
-sigo viendo inconsistencias:
+2. B.
 
-![alt text](image-4.png)
-http://127.0.0.1:8000/admin/items?tableSearch=silla+verde+peque%C3%B1a
+3. Al responsable de esa ubicación.
 
-Sigue habiendo errores. Por favor revisa a profundidad qué suecede aquí y mejora esas prácticas.
+4. El adjunto.

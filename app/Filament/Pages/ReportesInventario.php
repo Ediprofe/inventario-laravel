@@ -18,7 +18,9 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Filament\Tables;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Http;
 
 class ReportesInventario extends Page implements HasForms, HasTable
 {
@@ -74,6 +76,14 @@ class ReportesInventario extends Page implements HasForms, HasTable
     // Filters - Consolidado
     public $disponibilidadFilter = 'en_uso';
     public $articuloFilterId = '';
+
+    // Email Modal Properties
+    public bool $showEmailModal = false;
+    public string $emailModalType = ''; // 'ubicacion' or 'responsable'
+    public ?string $emailDestinatario = null;
+    public ?string $emailAddress = null;
+    public ?int $emailTargetId = null;
+    public bool $emailSending = false;
 
     public function mount()
     {
@@ -260,4 +270,125 @@ class ReportesInventario extends Page implements HasForms, HasTable
             default => 'gray',
         };
     }
+
+    // --- Email Modal Methods ---
+
+    public function openEmailModalUbicacion(): void
+    {
+        $ubicacion = $this->currentUbicacion;
+        
+        if (!$ubicacion) {
+            Notification::make()
+                ->title('Error')
+                ->body('Seleccione una ubicación primero')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        if (!$ubicacion->responsable) {
+            Notification::make()
+                ->title('Sin responsable')
+                ->body('Esta ubicación no tiene un responsable asignado')
+                ->warning()
+                ->send();
+            return;
+        }
+
+        if (!$ubicacion->responsable->email) {
+            Notification::make()
+                ->title('Email no registrado')
+                ->body("El responsable {$ubicacion->responsable->nombre_completo} no tiene email registrado")
+                ->warning()
+                ->send();
+            return;
+        }
+
+        $this->emailModalType = 'ubicacion';
+        $this->emailDestinatario = $ubicacion->responsable->nombre_completo;
+        $this->emailAddress = $ubicacion->responsable->email;
+        $this->emailTargetId = $ubicacion->id;
+        $this->showEmailModal = true;
+    }
+
+    public function openEmailModalResponsable(): void
+    {
+        $responsable = $this->currentResponsable;
+        
+        if (!$responsable) {
+            Notification::make()
+                ->title('Error')
+                ->body('Seleccione un responsable primero')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        if (!$responsable->email) {
+            Notification::make()
+                ->title('Email no registrado')
+                ->body("El responsable {$responsable->nombre_completo} no tiene email registrado")
+                ->warning()
+                ->send();
+            return;
+        }
+
+        $this->emailModalType = 'responsable';
+        $this->emailDestinatario = $responsable->nombre_completo;
+        $this->emailAddress = $responsable->email;
+        $this->emailTargetId = $responsable->id;
+        $this->showEmailModal = true;
+    }
+
+    public function closeEmailModal(): void
+    {
+        $this->showEmailModal = false;
+        $this->emailModalType = '';
+        $this->emailDestinatario = null;
+        $this->emailAddress = null;
+        $this->emailTargetId = null;
+    }
+
+    public function sendEmail(): void
+    {
+        $this->emailSending = true;
+
+        try {
+            $url = $this->emailModalType === 'ubicacion'
+                ? route('reportes.pdf.ubicacion.enviar', $this->emailTargetId)
+                : route('reportes.excel.responsable.enviar', $this->emailTargetId);
+
+            $response = Http::withCookies(request()->cookies->all(), request()->getHost())
+                ->withHeaders([
+                    'X-CSRF-TOKEN' => csrf_token(),
+                ])
+                ->post($url);
+
+            $data = $response->json();
+
+            if ($response->successful() && ($data['success'] ?? false)) {
+                Notification::make()
+                    ->title('Correo enviado')
+                    ->body($data['message'] ?? 'El reporte fue enviado exitosamente')
+                    ->success()
+                    ->send();
+                $this->closeEmailModal();
+            } else {
+                Notification::make()
+                    ->title('Error al enviar')
+                    ->body($data['message'] ?? 'No se pudo enviar el correo')
+                    ->danger()
+                    ->send();
+            }
+        } catch (\Exception $e) {
+            Notification::make()
+                ->title('Error')
+                ->body('Error de conexión: ' . $e->getMessage())
+                ->danger()
+                ->send();
+        } finally {
+            $this->emailSending = false;
+        }
+    }
 }
+

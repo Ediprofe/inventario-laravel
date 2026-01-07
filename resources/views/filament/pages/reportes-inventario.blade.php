@@ -87,6 +87,15 @@
                                 </svg>
                                 PDF
                             </a>
+                            {{-- 
+                            <button wire:click="openEmailModalUbicacion"
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                Enviar
+                            </button> 
+                            --}}
                             <span class="px-3 py-1 bg-blue-100 text-blue-700 font-bold rounded-full text-sm dark:bg-blue-900 dark:text-blue-300">
                                 {{ $this->totalItemsUbicacion }} Items
                             </span>
@@ -173,6 +182,15 @@
                             </svg>
                             Excel
                         </a>
+                        {{-- 
+                        <button wire:click="openEmailModalResponsable"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            Enviar
+                        </button> 
+                        --}}
                          <span class="px-4 py-2 bg-purple-100 text-purple-700 font-bold rounded-full dark:bg-purple-900 dark:text-purple-300">
                             {{ $this->totalItemsResponsable }} Items Total
                         </span>
@@ -318,4 +336,12 @@
             </div>
         </div>
     @endif
+
+    {{-- EMAIL MODAL (PAUSED)
+    @if($showEmailModal)
+        <div class="fixed inset-0 z-50 flex items-center justify-center">
+            ...
+        </div>
+    @endif
+    --}}
 </x-filament-panels::page>
