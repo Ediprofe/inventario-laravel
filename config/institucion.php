@@ -11,7 +11,7 @@ return [
     |
     */
 
-    'nombre' => env('INSTITUCION_NOMBRE', 'Institución Educativa'),
+    'nombre' => env('INSTITUCION_NOMBRE', 'IE SAN JOSÉ'),
     'nit' => env('INSTITUCION_NIT', ''),
     'direccion' => env('INSTITUCION_DIRECCION', ''),
     'telefono' => env('INSTITUCION_TELEFONO', ''),

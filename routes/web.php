@@ -30,10 +30,14 @@ Route::middleware('auth')->prefix('reportes-pdf')->group(function () {
         ->name('reportes.pdf.ubicacion');
     Route::post('/ubicacion/{ubicacionId}/enviar', [\App\Http\Controllers\ReportesPdfController::class, 'enviarUbicacion'])
         ->name('reportes.pdf.ubicacion.enviar');
+    Route::get('/responsable/{responsableId}', [\App\Http\Controllers\ReportesPdfController::class, 'responsable'])
+        ->name('reportes.pdf.responsable');
 });
 
 // Excel Reports
 Route::middleware('auth')->prefix('reportes-excel')->group(function () {
+    Route::get('/ubicacion/{ubicacionId}', [\App\Http\Controllers\ReportesExcelController::class, 'ubicacion'])
+        ->name('reportes.excel.ubicacion');
     Route::get('/responsable/{responsableId}', [\App\Http\Controllers\ReportesExcelController::class, 'responsable'])
         ->name('reportes.excel.responsable');
     Route::post('/responsable/{responsableId}/enviar', [\App\Http\Controllers\ReportesExcelController::class, 'enviarResponsable'])

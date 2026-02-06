@@ -22,7 +22,7 @@ class ReportesPdfController extends Controller
      */
     public function ubicacion(int $ubicacionId)
     {
-        $data = $this->reportService->getInventarioPorUbicacion($ubicacionId);
+        $data = $this->reportService->getInventarioPorUbicacionCompleto($ubicacionId);
         
         if (!$data['ubicacion']) {
             abort(404, 'Ubicación no encontrada');
@@ -31,6 +31,25 @@ class ReportesPdfController extends Controller
         $pdf = Pdf::loadView('pdf.ubicacion', compact('data'));
         
         $filename = 'Inventario_' . $data['ubicacion']->codigo . '_' . now()->format('Y-m-d') . '.pdf';
+        
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Generate PDF for inventory by responsible person
+     */
+    public function responsable(int $responsableId)
+    {
+        $data = $this->reportService->getInventarioPorResponsableCompleto($responsableId);
+        
+        if (!$data['responsable']) {
+            abort(404, 'Responsable no encontrado');
+        }
+        
+        $pdf = Pdf::loadView('pdf.responsable', compact('data'));
+        
+        $nombreLimpio = str_replace(' ', '_', $data['responsable']->nombre_completo);
+        $filename = 'Inventario_' . $nombreLimpio . '_' . now()->format('Y-m-d') . '.pdf';
         
         return $pdf->download($filename);
     }

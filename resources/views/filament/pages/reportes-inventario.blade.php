@@ -87,15 +87,14 @@
                                 </svg>
                                 PDF
                             </a>
-                            {{-- 
-                            <button wire:click="openEmailModalUbicacion"
-                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                            <a href="{{ route('reportes.excel.ubicacion', $this->ubicacionId) }}" 
+                               target="_blank"
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
-                                Enviar
-                            </button> 
-                            --}}
+                                Excel
+                            </a>
                             <span class="px-3 py-1 bg-blue-100 text-blue-700 font-bold rounded-full text-sm dark:bg-blue-900 dark:text-blue-300">
                                 {{ $this->totalItemsUbicacion }} Items
                             </span>
@@ -190,6 +189,14 @@
                         </div>
                     </div>
                     <div class="ml-auto flex items-center gap-3">
+                        <a href="{{ route('reportes.pdf.responsable', $this->responsableFilterId) }}" 
+                           target="_blank"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            PDF
+                        </a>
                         <a href="{{ route('reportes.excel.responsable', $this->responsableFilterId) }}" 
                            target="_blank"
                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">

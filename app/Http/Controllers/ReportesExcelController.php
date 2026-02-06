@@ -3,14 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Exports\Responsable\ResponsableIndividualExport;
+use App\Exports\Ubicacion\UbicacionIndividualExport;
 use App\Mail\InventarioReportMail;
 use App\Models\Responsable;
+use App\Models\Ubicacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ReportesExcelController extends Controller
 {
+    /**
+     * Generate Excel for inventory by location
+     */
+    public function ubicacion(int $ubicacionId)
+    {
+        $ubicacion = Ubicacion::findOrFail($ubicacionId);
+        
+        $filename = 'Inventario_' . $ubicacion->codigo . '_' . date('Y-m-d') . '.xlsx';
+        
+        return Excel::download(new UbicacionIndividualExport($ubicacionId), $filename);
+    }
+
     public function responsable(int $responsableId)
     {
         $responsable = Responsable::findOrFail($responsableId);

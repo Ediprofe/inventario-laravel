@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Exports\Responsable;
+namespace App\Exports\Ubicacion;
 
 use App\Models\Item;
-use App\Models\Responsable;
 use App\Exports\Concerns\DefaultTableStyles;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithTitle;
@@ -11,16 +10,16 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class DetalleResponsableSheet implements FromArray, WithTitle, WithStyles, ShouldAutoSize, WithHeadings
+class DetalleUbicacionSheet implements FromArray, WithTitle, WithStyles, ShouldAutoSize, WithHeadings
 {
     use DefaultTableStyles;
 
-    protected $responsableId;
+    protected $ubicacionId;
     protected $title;
 
-    public function __construct(int $responsableId, string $title)
+    public function __construct(int $ubicacionId, string $title)
     {
-        $this->responsableId = $responsableId;
+        $this->ubicacionId = $ubicacionId;
         $this->title = $title;
     }
 
@@ -39,9 +38,9 @@ class DetalleResponsableSheet implements FromArray, WithTitle, WithStyles, Shoul
     public function array(): array
     {
         return Item::enUso()
-            ->where('responsable_id', $this->responsableId)
-            ->with(['articulo', 'ubicacion', 'sede', 'responsable'])
-            ->orderBy('ubicacion_id')
+            ->where('ubicacion_id', $this->ubicacionId)
+            ->with(['articulo', 'sede', 'ubicacion', 'responsable'])
+            ->orderBy('articulo_id')
             ->get()
             ->map(function ($item) {
                 return [

@@ -61,6 +61,29 @@ class InventarioReportService
             'total' => $items->count(),
         ];
     }
+
+    /**
+     * Get complete inventory for a location (for PDF with detail)
+     * Includes both summary and individual item details
+     * Only items with disponibilidad = 'en_uso'
+     */
+    public function getInventarioPorUbicacionCompleto(int $ubicacionId): array
+    {
+        $baseData = $this->getInventarioPorUbicacion($ubicacionId);
+        
+        if (!$baseData['ubicacion']) {
+            return array_merge($baseData, ['detalle' => collect()]);
+        }
+        
+        // Get individual items for detail table
+        $detalle = Item::where('ubicacion_id', $ubicacionId)
+            ->where('disponibilidad', Disponibilidad::EN_USO)
+            ->with(['articulo', 'sede', 'ubicacion', 'responsable'])
+            ->orderBy('articulo_id')
+            ->get();
+        
+        return array_merge($baseData, ['detalle' => $detalle]);
+    }
     
     /**
      * Get aggregated inventory for a specific responsible person
@@ -113,6 +136,30 @@ class InventarioReportService
         ];
     }
     
+    /**
+     * Get complete inventory for a responsible person (for PDF with detail)
+     * Includes both summary and individual item details
+     * Only items with disponibilidad = 'en_uso'
+     */
+    public function getInventarioPorResponsableCompleto(int $responsableId): array
+    {
+        $baseData = $this->getInventarioPorResponsable($responsableId);
+        
+        if (!$baseData['responsable']) {
+            return array_merge($baseData, ['detalle' => collect()]);
+        }
+        
+        // Get individual items for detail table
+        $detalle = Item::where('responsable_id', $responsableId)
+            ->where('disponibilidad', Disponibilidad::EN_USO)
+            ->with(['articulo', 'sede', 'ubicacion', 'responsable'])
+            ->orderBy('ubicacion_id')
+            ->orderBy('articulo_id')
+            ->get();
+        
+        return array_merge($baseData, ['detalle' => $detalle]);
+    }
+
     /**
      * Format estado breakdown as string (e.g., "Bueno: 10, Regular: 2")
      */
