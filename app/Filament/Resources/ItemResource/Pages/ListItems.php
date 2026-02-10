@@ -124,6 +124,35 @@ class ListItems extends ListRecords
                         ]),
                 ])
                 ->action(function (array $data) {
+                    // Validate unique placas within the batch and against DB
+                    $placas = collect($data['items'])
+                        ->pluck('placa')
+                        ->filter(fn ($p) => $p && $p !== '' && $p !== 'NA');
+                    
+                    // Check for duplicates within the batch
+                    $duplicatesInBatch = $placas->duplicates()->values();
+                    if ($duplicatesInBatch->isNotEmpty()) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Placas duplicadas en el lote')
+                            ->body('Las siguientes placas están repetidas: ' . $duplicatesInBatch->implode(', '))
+                            ->danger()
+                            ->persistent()
+                            ->send();
+                        return;
+                    }
+                    
+                    // Check for duplicates against existing DB records
+                    $existingPlacas = \App\Models\Item::whereIn('placa', $placas->toArray())->pluck('placa');
+                    if ($existingPlacas->isNotEmpty()) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Placas ya existentes')
+                            ->body('Las siguientes placas ya existen en el inventario: ' . $existingPlacas->implode(', '))
+                            ->danger()
+                            ->persistent()
+                            ->send();
+                        return;
+                    }
+
                     $commonData = [
                         'sede_id' => $data['sede_id'],
                         'ubicacion_id' => $data['ubicacion_id'],
@@ -151,24 +180,5 @@ class ListItems extends ListRecords
                         ->send();
                 }),
         ];
-    }
-
-    /**
-     * Apply default en_uso filter when disponibilidad filter is not explicitly set.
-     * This ensures consistency with Reportes which always filter by en_uso.
-     */
-    protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
-    {
-        $query = parent::getTableQuery();
-        
-        // Check if the disponibilidad filter is explicitly set in the URL
-        $disponibilidadFilter = $this->tableFilters['disponibilidad']['value'] ?? null;
-        
-        // If not set (null) or empty, apply default en_uso filter
-        if (empty($disponibilidadFilter)) {
-            $query->where('disponibilidad', \App\Enums\Disponibilidad::EN_USO);
-        }
-        
-        return $query;
     }
 }

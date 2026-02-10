@@ -32,6 +32,8 @@ Route::middleware('auth')->prefix('reportes-pdf')->group(function () {
         ->name('reportes.pdf.ubicacion.enviar');
     Route::get('/responsable/{responsableId}', [\App\Http\Controllers\ReportesPdfController::class, 'responsable'])
         ->name('reportes.pdf.responsable');
+    Route::post('/responsable/{responsableId}/enviar', [\App\Http\Controllers\ReportesPdfController::class, 'enviarResponsable'])
+        ->name('reportes.pdf.responsable.enviar');
 });
 
 // Excel Reports
@@ -43,6 +45,12 @@ Route::middleware('auth')->prefix('reportes-excel')->group(function () {
     Route::post('/responsable/{responsableId}/enviar', [\App\Http\Controllers\ReportesExcelController::class, 'enviarResponsable'])
         ->name('reportes.excel.responsable.enviar');
 });
+
+// Public inventory approval (no auth required)
+Route::get('/inventario/aprobar/{token}', [\App\Http\Controllers\AprobacionInventarioController::class, 'mostrar'])
+    ->name('inventario.aprobar');
+Route::post('/inventario/aprobar/{token}', [\App\Http\Controllers\AprobacionInventarioController::class, 'confirmar'])
+    ->name('inventario.aprobar.confirmar');
 
 require __DIR__.'/auth.php';
 

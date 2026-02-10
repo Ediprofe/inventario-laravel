@@ -16,29 +16,26 @@ class InventarioReportMail extends Mailable
     public string $destinatario;
     public string $tipoReporte;
     public string $nombreReporte;
+    public ?string $urlAprobacion;
     protected string $archivoPath;
     protected string $archivoNombre;
 
-    /**
-     * Create a new message instance.
-     */
     public function __construct(
         string $destinatario,
         string $tipoReporte,
         string $nombreReporte,
         string $archivoPath,
-        string $archivoNombre
+        string $archivoNombre,
+        ?string $urlAprobacion = null
     ) {
         $this->destinatario = $destinatario;
         $this->tipoReporte = $tipoReporte;
         $this->nombreReporte = $nombreReporte;
         $this->archivoPath = $archivoPath;
         $this->archivoNombre = $archivoNombre;
+        $this->urlAprobacion = $urlAprobacion;
     }
 
-    /**
-     * Get the message envelope.
-     */
     public function envelope(): Envelope
     {
         return new Envelope(
@@ -46,9 +43,6 @@ class InventarioReportMail extends Mailable
         );
     }
 
-    /**
-     * Get the message content definition.
-     */
     public function content(): Content
     {
         return new Content(
@@ -56,9 +50,6 @@ class InventarioReportMail extends Mailable
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     */
     public function attachments(): array
     {
         return [

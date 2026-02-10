@@ -16,6 +16,7 @@ class AuditReportExport implements WithMultipleSheets
             new ResponsablesExport(),
             new PorUbicacionExport(),
             new PorResponsableExport(),
+            new EnviosInventarioExport(),
         ];
     }
 }

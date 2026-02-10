@@ -35,7 +35,7 @@ class ItemsExport implements FromQuery, WithHeadings, WithMapping, WithTitle, Wi
 
     public function query()
     {
-        return Item::enUso()->with(['sede', 'ubicacion', 'articulo', 'responsable']);
+        return Item::query()->with(['sede', 'ubicacion', 'articulo', 'responsable']);
     }
 
     public function headings(): array

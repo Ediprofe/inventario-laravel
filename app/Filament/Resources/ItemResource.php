@@ -42,7 +42,13 @@ class ItemResource extends Resource
                     ->relationship('responsable', 'nombre_completo')
                     ->searchable()
                     ->preload(),
-                Forms\Components\TextInput::make('placa'),
+                Forms\Components\TextInput::make('placa')
+                    ->unique(table: 'items', column: 'placa', ignoreRecord: true, modifyRuleUsing: function ($rule) {
+                        return $rule->where(fn ($query) => $query->whereNotNull('placa')->where('placa', '!=', '')->where('placa', '!=', 'NA'));
+                    })
+                    ->validationMessages([
+                        'unique' => 'Ya existe un ítem con esta placa.',
+                    ]),
                 Forms\Components\TextInput::make('marca'),
                 Forms\Components\TextInput::make('serial'),
                 Forms\Components\Select::make('estado')
@@ -105,11 +111,18 @@ class ItemResource extends Resource
                     ->limit(30)
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('Creado')
+                    ->since()
+                    ->sortable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Modificado')
+                    ->since()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('created_at', 'desc')
             ->filters([
                 Tables\Filters\SelectFilter::make('sede')
                     ->relationship('sede', 'nombre'),

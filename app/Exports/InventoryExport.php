@@ -22,6 +22,7 @@ class InventoryExport implements WithMultipleSheets
             new UbicacionesExport(),
             new ArticulosExport(),
             new ResponsablesExport(),
+            new EnviosInventarioExport(),
         ];
     }
 }
