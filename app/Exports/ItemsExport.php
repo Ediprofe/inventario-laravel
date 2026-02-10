@@ -2,19 +2,17 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\DefaultTableStyles;
 use App\Models\Item;
 use Maatwebsite\Excel\Concerns\FromQuery;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use Illuminate\Database\Eloquent\Builder;
-
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use App\Exports\Concerns\DefaultTableStyles;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 
-class ItemsExport implements FromQuery, WithHeadings, WithMapping, WithTitle, WithStyles, ShouldAutoSize, WithColumnWidths
+class ItemsExport implements FromQuery, ShouldAutoSize, WithColumnWidths, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     use DefaultTableStyles;
 
@@ -35,7 +33,9 @@ class ItemsExport implements FromQuery, WithHeadings, WithMapping, WithTitle, Wi
 
     public function query()
     {
-        return Item::query()->with(['sede', 'ubicacion', 'articulo', 'responsable']);
+        return Item::query()
+            ->with(['sede', 'ubicacion', 'articulo', 'responsable'])
+            ->orderBy('updated_at', 'desc');
     }
 
     public function headings(): array
