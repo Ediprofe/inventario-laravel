@@ -19,6 +19,13 @@ class ItemResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    // Disable global search for this resource to prevent memory exhaustion
+    // with 5,000+ records and multiple searchable relationship columns
+    public static function getGloballySearchableAttributes(): array
+    {
+        return [];
+    }
+
     public static function form(Form $form): Form
     {
         return $form
