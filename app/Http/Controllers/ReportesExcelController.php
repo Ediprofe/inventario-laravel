@@ -9,6 +9,7 @@ use App\Models\Responsable;
 use App\Models\Ubicacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ReportesExcelController extends Controller
@@ -57,14 +58,14 @@ class ReportesExcelController extends Controller
         
         // Generate Excel to temporary file
         $filename = 'Inventario_' . str_replace(' ', '_', $responsable->nombre_completo) . '_' . date('Y-m-d') . '.xlsx';
-        $tempPath = storage_path('app/temp/' . $filename);
         
-        // Ensure temp directory exists
-        if (!file_exists(storage_path('app/temp'))) {
-            mkdir(storage_path('app/temp'), 0755, true);
+        $localDisk = Storage::disk('local');
+        if (!$localDisk->exists('temp')) {
+            $localDisk->makeDirectory('temp');
         }
         
         Excel::store(new ResponsableIndividualExport($responsableId), 'temp/' . $filename, 'local');
+        $tempPath = $localDisk->path('temp/' . $filename);
         
         try {
             Mail::to($responsable->email)

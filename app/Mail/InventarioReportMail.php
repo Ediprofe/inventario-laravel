@@ -17,28 +17,47 @@ class InventarioReportMail extends Mailable
     public string $tipoReporte;
     public string $nombreReporte;
     public ?string $urlAprobacion;
-    protected string $archivoPath;
-    protected string $archivoNombre;
+    
+    /** @var array<array{path: string, name: string}> */
+    protected array $archivos;
 
     public function __construct(
         string $destinatario,
         string $tipoReporte,
         string $nombreReporte,
-        string $archivoPath,
-        string $archivoNombre,
+        string|array $archivoPath,
+        string|array $archivoNombre,
         ?string $urlAprobacion = null
     ) {
         $this->destinatario = $destinatario;
         $this->tipoReporte = $tipoReporte;
         $this->nombreReporte = $nombreReporte;
-        $this->archivoPath = $archivoPath;
-        $this->archivoNombre = $archivoNombre;
         $this->urlAprobacion = $urlAprobacion;
+
+        // Normalize to array of files for multi-attachment support
+        if (is_array($archivoPath)) {
+            $nombres = is_array($archivoNombre) ? $archivoNombre : [$archivoNombre];
+            $this->archivos = [];
+            foreach ($archivoPath as $i => $path) {
+                $this->archivos[] = [
+                    'path' => $path,
+                    'name' => $nombres[$i] ?? basename($path),
+                ];
+            }
+        } else {
+            $this->archivos = [
+                ['path' => $archivoPath, 'name' => $archivoNombre],
+            ];
+        }
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
+            from: new \Illuminate\Mail\Mailables\Address(
+                config('mail.from.address'),
+                'Inventario San José'
+            ),
             subject: "Reporte de Inventario - {$this->nombreReporte}",
         );
     }
@@ -52,9 +71,8 @@ class InventarioReportMail extends Mailable
 
     public function attachments(): array
     {
-        return [
-            Attachment::fromPath($this->archivoPath)
-                ->as($this->archivoNombre),
-        ];
+        return collect($this->archivos)
+            ->map(fn ($archivo) => Attachment::fromPath($archivo['path'])->as($archivo['name']))
+            ->toArray();
     }
 }

@@ -31,7 +31,7 @@ class DetalleUbicacionSheet implements FromArray, WithTitle, WithStyles, ShouldA
     public function headings(): array
     {
         return [
-            ['Placa', 'Artículo', 'Sede', 'Cód. Ubicación', 'Ubicación', 'Responsable', 'Estado']
+            ['Placa', 'Artículo', 'Responsable', 'Marca', 'Serial', 'Estado', 'Disponibilidad', 'Descripción', 'Observaciones']
         ];
     }
 
@@ -39,18 +39,20 @@ class DetalleUbicacionSheet implements FromArray, WithTitle, WithStyles, ShouldA
     {
         return Item::enUso()
             ->where('ubicacion_id', $this->ubicacionId)
-            ->with(['articulo', 'sede', 'ubicacion', 'responsable'])
+            ->with(['articulo', 'responsable'])
             ->orderBy('articulo_id')
             ->get()
             ->map(function ($item) {
                 return [
                     $item->placa ?? 'NA',
                     $item->articulo->nombre ?? '',
-                    $item->sede->nombre ?? '',
-                    $item->ubicacion->codigo ?? '',
-                    $item->ubicacion->nombre ?? '',
                     $item->responsable->nombre_completo ?? '',
+                    $item->marca ?? '',
+                    $item->serial ?? '',
                     $item->estado?->getLabel() ?? '',
+                    $item->disponibilidad?->getLabel() ?? '',
+                    $item->descripcion ?? '',
+                    $item->observaciones ?? '',
                 ];
             })
             ->toArray();

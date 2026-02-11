@@ -20,8 +20,8 @@ class ResponsableIndividualExport implements WithMultipleSheets
         $nombre = $responsable ? $responsable->nombre_completo : 'Responsable';
 
         return [
-            new ResumenResponsableSheet($this->responsableId, 'Resumen'),
             new DetalleResponsableSheet($this->responsableId, 'Detalle'),
+            new ResumenResponsableSheet($this->responsableId, 'Resumen'),
         ];
     }
 }

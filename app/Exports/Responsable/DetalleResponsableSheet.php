@@ -3,7 +3,6 @@
 namespace App\Exports\Responsable;
 
 use App\Models\Item;
-use App\Models\Responsable;
 use App\Exports\Concerns\DefaultTableStyles;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithTitle;
@@ -32,7 +31,7 @@ class DetalleResponsableSheet implements FromArray, WithTitle, WithStyles, Shoul
     public function headings(): array
     {
         return [
-            ['Placa', 'Artículo', 'Sede', 'Cód. Ubicación', 'Ubicación', 'Responsable', 'Estado']
+            ['Placa', 'Artículo', 'Sede', 'Cód. Ubicación', 'Ubicación', 'Marca', 'Serial', 'Estado', 'Disponibilidad', 'Descripción', 'Observaciones']
         ];
     }
 
@@ -40,8 +39,9 @@ class DetalleResponsableSheet implements FromArray, WithTitle, WithStyles, Shoul
     {
         return Item::enUso()
             ->where('responsable_id', $this->responsableId)
-            ->with(['articulo', 'ubicacion', 'sede', 'responsable'])
+            ->with(['articulo', 'ubicacion', 'sede'])
             ->orderBy('ubicacion_id')
+            ->orderBy('articulo_id')
             ->get()
             ->map(function ($item) {
                 return [
@@ -50,8 +50,12 @@ class DetalleResponsableSheet implements FromArray, WithTitle, WithStyles, Shoul
                     $item->sede->nombre ?? '',
                     $item->ubicacion->codigo ?? '',
                     $item->ubicacion->nombre ?? '',
-                    $item->responsable->nombre_completo ?? '',
+                    $item->marca ?? '',
+                    $item->serial ?? '',
                     $item->estado?->getLabel() ?? '',
+                    $item->disponibilidad?->getLabel() ?? '',
+                    $item->descripcion ?? '',
+                    $item->observaciones ?? '',
                 ];
             })
             ->toArray();

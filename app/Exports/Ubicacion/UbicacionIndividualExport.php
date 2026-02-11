@@ -17,8 +17,8 @@ class UbicacionIndividualExport implements WithMultipleSheets
     public function sheets(): array
     {
         return [
-            new ResumenUbicacionSheet($this->ubicacionId, 'Resumen'),
             new DetalleUbicacionSheet($this->ubicacionId, 'Detalle'),
+            new ResumenUbicacionSheet($this->ubicacionId, 'Resumen'),
         ];
     }
 }

@@ -60,40 +60,4 @@
             </tr>
         </tbody>
     </table>
-
-    {{-- Detalle de Items - Nueva Página --}}
-    @if(count($data['detalle']) > 0)
-    <div class="page-break"></div>
-    <h3 class="section-title">DETALLE DE ITEMS ASIGNADOS</h3>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 10%">Placa</th>
-                <th style="width: 22%">Artículo</th>
-                <th style="width: 13%">Sede</th>
-                <th style="width: 10%">Cód. Ubic.</th>
-                <th style="width: 18%">Ubicación</th>
-                <th style="width: 17%">Responsable</th>
-                <th style="width: 10%">Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($data['detalle'] as $item)
-                <tr>
-                    <td style="font-family: monospace; font-size: 7.5pt;">{{ $item->placa ?? 'NA' }}</td>
-                    <td style="font-weight: bold; font-size: 8pt;">{{ $item->articulo->nombre ?? '-' }}</td>
-                    <td style="font-size: 8pt;">{{ $item->sede->nombre ?? '-' }}</td>
-                    <td style="font-family: monospace; font-size: 7.5pt;">{{ $item->ubicacion->codigo ?? '-' }}</td>
-                    <td style="font-size: 8pt;">{{ $item->ubicacion->nombre ?? '-' }}</td>
-                    <td style="font-size: 8pt;">{{ $item->responsable->nombre_completo ?? '-' }}</td>
-                    <td style="text-align: center;">
-                        <span class="badge badge-{{ $item->estado?->value }}">
-                            {{ $item->estado?->getLabel() ?? '-' }}
-                        </span>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-    @endif
 @endsection

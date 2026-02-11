@@ -2,12 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\Responsable\ResponsableIndividualExport;
+use App\Exports\Ubicacion\UbicacionIndividualExport;
 use App\Mail\InventarioReportMail;
 use App\Models\EnvioInventario;
 use App\Services\InventarioReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportesPdfController extends Controller
 {
@@ -19,11 +23,11 @@ class ReportesPdfController extends Controller
     }
 
     /**
-     * Generate PDF for inventory by location
+     * Generate PDF for inventory by location (summary only, no detail)
      */
     public function ubicacion(int $ubicacionId)
     {
-        $data = $this->reportService->getInventarioPorUbicacionCompleto($ubicacionId);
+        $data = $this->reportService->getInventarioPorUbicacion($ubicacionId);
         
         if (!$data['ubicacion']) {
             abort(404, 'Ubicación no encontrada');
@@ -31,17 +35,18 @@ class ReportesPdfController extends Controller
         
         $pdf = Pdf::loadView('pdf.ubicacion', compact('data'));
         
-        $filename = 'Inventario_' . $data['ubicacion']->codigo . '_' . now()->format('Y-m-d') . '.pdf';
+        $nombreReporte = $data['ubicacion']->codigo . ' - ' . $data['ubicacion']->nombre;
+        $filename = 'Inventario_' . str_replace(['/', ' '], '_', $nombreReporte) . '_' . now()->format('Y-m-d') . '.pdf';
         
         return $pdf->download($filename);
     }
 
     /**
-     * Generate PDF for inventory by responsible person
+     * Generate PDF for inventory by responsible person (summary only)
      */
     public function responsable(int $responsableId)
     {
-        $data = $this->reportService->getInventarioPorResponsableCompleto($responsableId);
+        $data = $this->reportService->getInventarioPorResponsable($responsableId);
         
         if (!$data['responsable']) {
             abort(404, 'Responsable no encontrado');
@@ -56,11 +61,11 @@ class ReportesPdfController extends Controller
     }
 
     /**
-     * Send inventory PDF by email — by location
+     * Send inventory PDF + Excel by email — by location
      */
     public function enviarUbicacion(int $ubicacionId)
     {
-        $data = $this->reportService->getInventarioPorUbicacionCompleto($ubicacionId);
+        $data = $this->reportService->getInventarioPorUbicacion($ubicacionId);
         
         if (!$data['ubicacion']) {
             return response()->json(['success' => false, 'message' => 'Ubicación no encontrada'], 404);
@@ -88,36 +93,47 @@ class ReportesPdfController extends Controller
         
         $urlAprobacion = url("/inventario/aprobar/{$envio->token}");
         
-        // Generate PDF to temporary file
-        $pdf = Pdf::loadView('pdf.ubicacion', compact('data'));
-        $filename = 'Inventario_' . $data['ubicacion']->codigo . '_' . now()->format('Y-m-d') . '.pdf';
-        $tempPath = storage_path('app/temp/' . $filename);
-        
-        if (!file_exists(storage_path('app/temp'))) {
-            mkdir(storage_path('app/temp'), 0755, true);
+        // Ensure temp directory exists in local disk
+        $localDisk = Storage::disk('local');
+        if (!$localDisk->exists('temp')) {
+            $localDisk->makeDirectory('temp');
         }
         
-        $pdf->save($tempPath);
+        $codigoUbicacion = $data['ubicacion']->codigo;
+        $fecha = now()->format('Y-m-d');
+        
+        // Generate PDF (summary only)
+        $pdf = Pdf::loadView('pdf.ubicacion', compact('data'));
+        $pdfFilename = "Inventario_{$codigoUbicacion}_{$fecha}.pdf";
+        $pdfPath = $localDisk->path('temp/' . $pdfFilename);
+        $pdf->save($pdfPath);
+        
+        // Generate Excel (resumen + detalle sheets)
+        $excelFilename = "Inventario_{$codigoUbicacion}_{$fecha}.xlsx";
+        Excel::store(new UbicacionIndividualExport($ubicacionId), 'temp/' . $excelFilename, 'local');
+        $excelPath = $localDisk->path('temp/' . $excelFilename);
         
         try {
             Mail::to($responsable->email)
                 ->send(new InventarioReportMail(
                     destinatario: $responsable->nombre_completo,
                     tipoReporte: 'Inventario por Ubicación',
-                    nombreReporte: $data['ubicacion']->nombre,
-                    archivoPath: $tempPath,
-                    archivoNombre: $filename,
+                    nombreReporte: $data['ubicacion']->codigo . ' - ' . $data['ubicacion']->nombre,
+                    archivoPath: [$pdfPath, $excelPath],
+                    archivoNombre: [$pdfFilename, $excelFilename],
                     urlAprobacion: $urlAprobacion
                 ));
             
-            @unlink($tempPath);
+            @unlink($pdfPath);
+            @unlink($excelPath);
             
             return response()->json([
                 'success' => true,
                 'message' => "Reporte enviado a {$responsable->email}"
             ]);
         } catch (\Exception $e) {
-            @unlink($tempPath);
+            @unlink($pdfPath);
+            @unlink($excelPath);
             $envio->delete();
             
             return response()->json([
@@ -128,11 +144,11 @@ class ReportesPdfController extends Controller
     }
 
     /**
-     * Send inventory PDF by email — by responsible person
+     * Send inventory PDF + Excel by email — by responsible person
      */
     public function enviarResponsable(int $responsableId)
     {
-        $data = $this->reportService->getInventarioPorResponsableCompleto($responsableId);
+        $data = $this->reportService->getInventarioPorResponsable($responsableId);
         
         if (!$data['responsable']) {
             return response()->json(['success' => false, 'message' => 'Responsable no encontrado'], 404);
@@ -156,17 +172,25 @@ class ReportesPdfController extends Controller
         
         $urlAprobacion = url("/inventario/aprobar/{$envio->token}");
         
-        // Generate PDF
-        $pdf = Pdf::loadView('pdf.responsable', compact('data'));
-        $nombreLimpio = str_replace(' ', '_', $responsable->nombre_completo);
-        $filename = 'Inventario_' . $nombreLimpio . '_' . now()->format('Y-m-d') . '.pdf';
-        $tempPath = storage_path('app/temp/' . $filename);
-        
-        if (!file_exists(storage_path('app/temp'))) {
-            mkdir(storage_path('app/temp'), 0755, true);
+        // Ensure temp directory exists in local disk
+        $localDisk = Storage::disk('local');
+        if (!$localDisk->exists('temp')) {
+            $localDisk->makeDirectory('temp');
         }
         
-        $pdf->save($tempPath);
+        $nombreLimpio = str_replace(' ', '_', $responsable->nombre_completo);
+        $fecha = now()->format('Y-m-d');
+        
+        // Generate PDF (summary only)
+        $pdf = Pdf::loadView('pdf.responsable', compact('data'));
+        $pdfFilename = "Inventario_{$nombreLimpio}_{$fecha}.pdf";
+        $pdfPath = $localDisk->path('temp/' . $pdfFilename);
+        $pdf->save($pdfPath);
+        
+        // Generate Excel (resumen + detalle sheets)
+        $excelFilename = "Inventario_{$nombreLimpio}_{$fecha}.xlsx";
+        Excel::store(new ResponsableIndividualExport($responsableId), 'temp/' . $excelFilename, 'local');
+        $excelPath = $localDisk->path('temp/' . $excelFilename);
         
         try {
             Mail::to($responsable->email)
@@ -174,19 +198,21 @@ class ReportesPdfController extends Controller
                     destinatario: $responsable->nombre_completo,
                     tipoReporte: 'Inventario por Responsable',
                     nombreReporte: $responsable->nombre_completo,
-                    archivoPath: $tempPath,
-                    archivoNombre: $filename,
+                    archivoPath: [$pdfPath, $excelPath],
+                    archivoNombre: [$pdfFilename, $excelFilename],
                     urlAprobacion: $urlAprobacion
                 ));
             
-            @unlink($tempPath);
+            @unlink($pdfPath);
+            @unlink($excelPath);
             
             return response()->json([
                 'success' => true,
                 'message' => "Reporte enviado a {$responsable->email}"
             ]);
         } catch (\Exception $e) {
-            @unlink($tempPath);
+            @unlink($pdfPath);
+            @unlink($excelPath);
             $envio->delete();
             
             return response()->json([
