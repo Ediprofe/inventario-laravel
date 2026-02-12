@@ -7,13 +7,12 @@ use App\Models\Ubicacion;
 use App\Models\Responsable;
 use App\Enums\EstadoFisico;
 use App\Enums\Disponibilidad;
-use Illuminate\Support\Collection;
 
 class InventarioReportService
 {
     /**
      * Get aggregated inventory for a specific location
-     * Only items with disponibilidad = 'en_uso'
+     * Includes all disponibilidades and estados
      */
     public function getInventarioPorUbicacion(int $ubicacionId): array
     {
@@ -24,11 +23,10 @@ class InventarioReportService
         }
         
         $items = Item::where('ubicacion_id', $ubicacionId)
-            ->where('disponibilidad', Disponibilidad::EN_USO)
             ->with('articulo')
             ->get();
         
-        // Group by articulo and aggregate
+        // Group by articulo and aggregate (all records)
         $grouped = $items->groupBy('articulo_id')->map(function ($group) {
             $articulo = $group->first()->articulo;
             
@@ -43,6 +41,18 @@ class InventarioReportService
                     ];
                 }
             }
+
+            // Count by disponibilidad
+            $disponibilidadCounts = [];
+            foreach (Disponibilidad::cases() as $disponibilidad) {
+                $count = $group->where('disponibilidad', $disponibilidad)->count();
+                if ($count > 0) {
+                    $disponibilidadCounts[$disponibilidad->value] = [
+                        'label' => $disponibilidad->getLabel(),
+                        'count' => $count,
+                    ];
+                }
+            }
             
             // Collect placas
             $placas = $group->pluck('placa')->filter(fn($p) => $p && $p !== 'NA')->values();
@@ -51,21 +61,42 @@ class InventarioReportService
                 'articulo' => $articulo->nombre,
                 'cantidad' => $group->count(),
                 'estados' => $estadoCounts,
+                'disponibilidades' => $disponibilidadCounts,
                 'placas' => $placas,
             ];
         })->values();
+
+        $resumenDisponibilidad = [];
+        foreach (Disponibilidad::cases() as $disponibilidad) {
+            $count = $items->where('disponibilidad', $disponibilidad)->count();
+            $resumenDisponibilidad[$disponibilidad->value] = [
+                'label' => $disponibilidad->getLabel(),
+                'count' => $count,
+            ];
+        }
+
+        $resumenEstado = [];
+        foreach (EstadoFisico::cases() as $estado) {
+            $count = $items->where('estado', $estado)->count();
+            $resumenEstado[$estado->value] = [
+                'label' => $estado->getLabel(),
+                'count' => $count,
+            ];
+        }
         
         return [
             'ubicacion' => $ubicacion,
             'items' => $grouped,
             'total' => $items->count(),
+            'total_en_uso' => $resumenDisponibilidad[Disponibilidad::EN_USO->value]['count'] ?? 0,
+            'resumen_disponibilidad' => $resumenDisponibilidad,
+            'resumen_estado' => $resumenEstado,
         ];
     }
 
     /**
      * Get complete inventory for a location (for PDF with detail)
      * Includes both summary and individual item details
-     * Only items with disponibilidad = 'en_uso'
      */
     public function getInventarioPorUbicacionCompleto(int $ubicacionId): array
     {
@@ -75,19 +106,23 @@ class InventarioReportService
             return array_merge($baseData, ['detalle' => collect()]);
         }
         
-        // Get individual items for detail table
+        // Get individual items for detail table (all + en_uso subset)
         $detalle = Item::where('ubicacion_id', $ubicacionId)
-            ->where('disponibilidad', Disponibilidad::EN_USO)
             ->with(['articulo', 'sede', 'ubicacion', 'responsable'])
             ->orderBy('articulo_id')
             ->get();
+
+        $detalleEnUso = $detalle->where('disponibilidad', Disponibilidad::EN_USO)->values();
         
-        return array_merge($baseData, ['detalle' => $detalle]);
+        return array_merge($baseData, [
+            'detalle' => $detalle,
+            'detalle_en_uso' => $detalleEnUso,
+        ]);
     }
     
     /**
      * Get aggregated inventory for a specific responsible person
-     * Only items with disponibilidad = 'en_uso'
+     * Includes all disponibilidades and estados
      */
     public function getInventarioPorResponsable(int $responsableId): array
     {
@@ -98,7 +133,6 @@ class InventarioReportService
         }
         
         $items = Item::where('responsable_id', $responsableId)
-            ->where('disponibilidad', Disponibilidad::EN_USO)
             ->with(['articulo', 'ubicacion'])
             ->get();
         
@@ -119,6 +153,17 @@ class InventarioReportService
                     ];
                 }
             }
+
+            $disponibilidadCounts = [];
+            foreach (Disponibilidad::cases() as $disponibilidad) {
+                $count = $group->where('disponibilidad', $disponibilidad)->count();
+                if ($count > 0) {
+                    $disponibilidadCounts[$disponibilidad->value] = [
+                        'label' => $disponibilidad->getLabel(),
+                        'count' => $count,
+                    ];
+                }
+            }
             
             return [
                 'articulo' => $first->articulo->nombre,
@@ -126,20 +171,41 @@ class InventarioReportService
                 'ubicacion_codigo' => $first->ubicacion->codigo,
                 'cantidad' => $group->count(),
                 'estados' => $estadoCounts,
+                'disponibilidades' => $disponibilidadCounts,
             ];
         })->values();
+
+        $resumenDisponibilidad = [];
+        foreach (Disponibilidad::cases() as $disponibilidad) {
+            $count = $items->where('disponibilidad', $disponibilidad)->count();
+            $resumenDisponibilidad[$disponibilidad->value] = [
+                'label' => $disponibilidad->getLabel(),
+                'count' => $count,
+            ];
+        }
+
+        $resumenEstado = [];
+        foreach (EstadoFisico::cases() as $estado) {
+            $count = $items->where('estado', $estado)->count();
+            $resumenEstado[$estado->value] = [
+                'label' => $estado->getLabel(),
+                'count' => $count,
+            ];
+        }
         
         return [
             'responsable' => $responsable,
             'items' => $grouped,
             'total' => $items->count(),
+            'total_en_uso' => $resumenDisponibilidad[Disponibilidad::EN_USO->value]['count'] ?? 0,
+            'resumen_disponibilidad' => $resumenDisponibilidad,
+            'resumen_estado' => $resumenEstado,
         ];
     }
     
     /**
      * Get complete inventory for a responsible person (for PDF with detail)
      * Includes both summary and individual item details
-     * Only items with disponibilidad = 'en_uso'
      */
     public function getInventarioPorResponsableCompleto(int $responsableId): array
     {
@@ -149,15 +215,19 @@ class InventarioReportService
             return array_merge($baseData, ['detalle' => collect()]);
         }
         
-        // Get individual items for detail table
+        // Get individual items for detail table (all + en_uso subset)
         $detalle = Item::where('responsable_id', $responsableId)
-            ->where('disponibilidad', Disponibilidad::EN_USO)
             ->with(['articulo', 'sede', 'ubicacion', 'responsable'])
             ->orderBy('ubicacion_id')
             ->orderBy('articulo_id')
             ->get();
+
+        $detalleEnUso = $detalle->where('disponibilidad', Disponibilidad::EN_USO)->values();
         
-        return array_merge($baseData, ['detalle' => $detalle]);
+        return array_merge($baseData, [
+            'detalle' => $detalle,
+            'detalle_en_uso' => $detalleEnUso,
+        ]);
     }
 
     /**

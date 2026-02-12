@@ -9,6 +9,7 @@ use App\Models\EnvioInventario;
 use App\Services\InventarioReportService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
@@ -135,6 +136,12 @@ class ReportesPdfController extends Controller
             @unlink($pdfPath);
             @unlink($excelPath);
             $envio->delete();
+            Log::error('Error enviando reporte por ubicacion', [
+                'ubicacion_id' => $ubicacionId,
+                'responsable_id' => $responsable->id,
+                'email' => $responsable->email,
+                'error' => $e->getMessage(),
+            ]);
             
             return response()->json([
                 'success' => false,
@@ -214,6 +221,11 @@ class ReportesPdfController extends Controller
             @unlink($pdfPath);
             @unlink($excelPath);
             $envio->delete();
+            Log::error('Error enviando reporte por responsable', [
+                'responsable_id' => $responsableId,
+                'email' => $responsable->email,
+                'error' => $e->getMessage(),
+            ]);
             
             return response()->json([
                 'success' => false,

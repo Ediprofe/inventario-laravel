@@ -5,6 +5,7 @@ namespace App\Exports\Ubicacion;
 use App\Models\Item;
 use App\Models\Ubicacion;
 use App\Enums\EstadoFisico;
+use App\Enums\Disponibilidad;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -34,32 +35,55 @@ class ResumenUbicacionSheet implements FromArray, WithTitle, WithStyles, ShouldA
     public function headings(): array
     {
         return [
-            ['Artículo', 'Cantidad', 'Bueno', 'Regular', 'Malo']
+            [
+                'Articulo',
+                'Cantidad Total',
+                'En Uso',
+                'En Reparacion',
+                'Extraviado',
+                'De Baja',
+                'Bueno',
+                'Regular',
+                'Malo',
+                'Sin Estado',
+            ],
         ];
     }
 
     public function array(): array
     {
-        $items = Item::enUso()
+        $items = Item::query()
             ->where('ubicacion_id', $this->ubicacionId)
             ->with('articulo')
+            ->orderBy('articulo_id')
             ->get();
 
-        // Agrupar por artículo y contar por estado
+        // Agrupar por articulo y contar por disponibilidad/estado
         return $items->groupBy('articulo_id')->map(function ($group) {
             $articulo = $group->first()->articulo;
             $total = $group->count();
-            
-            $bueno = $group->where('estado', EstadoFisico::BUENO)->count();
-            $regular = $group->where('estado', EstadoFisico::REGULAR)->count();
-            $malo = $group->where('estado', EstadoFisico::MALO)->count();
+
+            $disponibilidadCounts = [];
+            foreach (Disponibilidad::cases() as $disponibilidad) {
+                $disponibilidadCounts[$disponibilidad->value] = $group->where('disponibilidad', $disponibilidad)->count();
+            }
+
+            $estadoCounts = [];
+            foreach (EstadoFisico::cases() as $estado) {
+                $estadoCounts[$estado->value] = $group->where('estado', $estado)->count();
+            }
 
             return [
                 $articulo->nombre ?? '',
                 $total,
-                $bueno ?: '',
-                $regular ?: '',
-                $malo ?: '',
+                $disponibilidadCounts[Disponibilidad::EN_USO->value] ?? 0,
+                $disponibilidadCounts[Disponibilidad::EN_REPARACION->value] ?? 0,
+                $disponibilidadCounts[Disponibilidad::EXTRAVIADO->value] ?? 0,
+                $disponibilidadCounts[Disponibilidad::DE_BAJA->value] ?? 0,
+                $estadoCounts[EstadoFisico::BUENO->value] ?? 0,
+                $estadoCounts[EstadoFisico::REGULAR->value] ?? 0,
+                $estadoCounts[EstadoFisico::MALO->value] ?? 0,
+                $estadoCounts[EstadoFisico::SIN_ESTADO->value] ?? 0,
             ];
         })->values()->toArray();
     }
@@ -77,7 +101,7 @@ class ResumenUbicacionSheet implements FromArray, WithTitle, WithStyles, ShouldA
         if ($observaciones) {
             $obsStartRow = $highestRow + 2; // Leave one blank row
 
-            $sheet->setCellValue("A{$obsStartRow}", '📝 Observaciones de la Ubicación:');
+            $sheet->setCellValue("A{$obsStartRow}", 'Observaciones de la ubicacion:');
             $sheet->getStyle("A{$obsStartRow}")->applyFromArray([
                 'font' => [
                     'bold' => true,
@@ -88,7 +112,7 @@ class ResumenUbicacionSheet implements FromArray, WithTitle, WithStyles, ShouldA
 
             $obsContentRow = $obsStartRow + 1;
             $sheet->setCellValue("A{$obsContentRow}", $observaciones);
-            $sheet->mergeCells("A{$obsContentRow}:E{$obsContentRow}");
+            $sheet->mergeCells("A{$obsContentRow}:{$highestColumn}{$obsContentRow}");
             $sheet->getStyle("A{$obsContentRow}")->applyFromArray([
                 'font' => ['size' => 11, 'color' => ['argb' => 'FF78350F']],
                 'alignment' => [

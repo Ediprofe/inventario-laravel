@@ -381,7 +381,16 @@
                         'Accept': 'application/json',
                     }
                 });
-                const data = await response.json();
+                
+                let data = null;
+                const contentType = response.headers.get('content-type') || '';
+                
+                if (contentType.includes('application/json')) {
+                    data = await response.json();
+                } else {
+                    const raw = await response.text();
+                    throw new Error(raw || `HTTP ${response.status}`);
+                }
                 
                 if (data.success) {
                     btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
@@ -399,7 +408,7 @@
                     btn.disabled = false;
                 }
             } catch (error) {
-                alert('Error al enviar el correo. Intente de nuevo.');
+                alert('Error al enviar el correo: ' + (error.message || 'Intente de nuevo.'));
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }

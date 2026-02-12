@@ -37,7 +37,7 @@ class DetalleUbicacionSheet implements FromArray, WithTitle, WithStyles, ShouldA
 
     public function array(): array
     {
-        return Item::enUso()
+        return Item::query()
             ->where('ubicacion_id', $this->ubicacionId)
             ->with(['articulo', 'responsable'])
             ->orderBy('articulo_id')
@@ -57,4 +57,5 @@ class DetalleUbicacionSheet implements FromArray, WithTitle, WithStyles, ShouldA
             })
             ->toArray();
     }
+
 }

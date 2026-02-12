@@ -11,6 +11,13 @@ trait DefaultTableStyles
 {
     public function styles(Worksheet $sheet)
     {
+        $this->applyDefaultTableStyles($sheet);
+
+        return [];
+    }
+
+    protected function applyDefaultTableStyles(Worksheet $sheet): void
+    {
         // 1. Get highest column and row to define the range
         $highestColumn = $sheet->getHighestColumn();
         $highestRow = $sheet->getHighestRow();
@@ -97,6 +104,5 @@ trait DefaultTableStyles
 
         $sheet->setSelectedCell('A1');
 
-        return [];
     }
 }

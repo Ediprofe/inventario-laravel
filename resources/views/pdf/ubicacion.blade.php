@@ -25,15 +25,20 @@
             <span class="info-label">Total Items:</span>
             <span class="info-value" style="font-size: 11pt; font-weight: bold;">{{ $data['total'] }}</span>
         </div>
+        <div class="info-row">
+            <span class="info-label">Items En Uso:</span>
+            <span class="info-value" style="font-size: 10pt; font-weight: bold;">{{ $data['total_en_uso'] ?? 0 }}</span>
+        </div>
     </div>
 
     <h3 class="section-title">RESUMEN DE ARTÍCULOS</h3>
     <table>
         <thead>
             <tr>
-                <th style="width: 50%">Artículo</th>
-                <th style="width: 15%; text-align: center">Cantidad</th>
-                <th style="width: 35%">Desglose por Estado</th>
+                <th style="width: 35%">Artículo</th>
+                <th style="width: 10%; text-align: center">Cantidad</th>
+                <th style="width: 27%">Disponibilidad</th>
+                <th style="width: 28%">Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -41,6 +46,13 @@
                 <tr>
                     <td style="font-weight: bold;">{{ $item['articulo'] }}</td>
                     <td style="text-align: center; font-size: 11pt;">{{ $item['cantidad'] }}</td>
+                    <td>
+                        @foreach($item['disponibilidades'] as $disponibilidad)
+                            <div style="font-size: 8pt; color: #475569;">
+                                {{ $disponibilidad['label'] }}: <strong>{{ $disponibilidad['count'] }}</strong>
+                            </div>
+                        @endforeach
+                    </td>
                     <td>
                         @foreach($item['estados'] as $estado)
                             <div style="font-size: 8pt; color: #475569;">
@@ -53,6 +65,7 @@
             <tr class="total-row">
                 <td style="text-align: right; text-transform: uppercase; font-size: 8pt; letter-spacing: 1px;">Total de Items</td>
                 <td style="text-align: center; font-size: 12pt;">{{ $data['total'] }}</td>
+                <td></td>
                 <td></td>
             </tr>
         </tbody>

@@ -8,6 +8,7 @@ use App\Mail\InventarioReportMail;
 use App\Models\Responsable;
 use App\Models\Ubicacion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
@@ -87,6 +88,11 @@ class ReportesExcelController extends Controller
         } catch (\Exception $e) {
             // Clean up temp file on error
             @unlink($tempPath);
+            Log::error('Error enviando reporte Excel por responsable', [
+                'responsable_id' => $responsableId,
+                'email' => $responsable->email,
+                'error' => $e->getMessage(),
+            ]);
             
             return response()->json([
                 'success' => false,
@@ -95,4 +101,3 @@ class ReportesExcelController extends Controller
         }
     }
 }
-

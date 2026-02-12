@@ -2,17 +2,15 @@
 
 namespace App\Exports\Responsable;
 
+use App\Enums\Disponibilidad;
+use App\Enums\EstadoFisico;
 use App\Models\Item;
-use App\Models\Responsable;
 use App\Exports\Concerns\DefaultTableStyles;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use App\Enums\Disponibilidad;
 
 class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, ShouldAutoSize, WithHeadings
 {
@@ -35,32 +33,61 @@ class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, Shoul
     public function headings(): array
     {
         return [
-            ['Cód. Ubicación', 'Ubicación', 'Artículo', 'Cantidad']
+            [
+                'Cod. Ubicacion',
+                'Ubicacion',
+                'Articulo',
+                'Cantidad Total',
+                'En Uso',
+                'En Reparacion',
+                'Extraviado',
+                'De Baja',
+                'Bueno',
+                'Regular',
+                'Malo',
+                'Sin Estado',
+            ],
         ];
-    }
-    
-    protected function getResponsableName()
-    {
-        return Responsable::find($this->responsableId)?->nombre_completo ?? 'N/A';
     }
 
     public function array(): array
     {
-        return Item::enUso()
+        return Item::query()
             ->where('responsable_id', $this->responsableId)
-            ->selectRaw('articulo_id, ubicacion_id, count(*) as total')
             ->with(['articulo', 'ubicacion'])
-            ->groupBy('articulo_id', 'ubicacion_id')
-            ->orderBy('ubicacion_id') // Group visually by location
+            ->orderBy('ubicacion_id')
+            ->orderBy('articulo_id')
             ->get()
-            ->map(function ($row) {
+            ->groupBy(fn ($item) => $item->ubicacion_id . '_' . $item->articulo_id)
+            ->map(function ($group) {
+                $first = $group->first();
+
+                $disponibilidadCounts = [];
+                foreach (Disponibilidad::cases() as $disponibilidad) {
+                    $disponibilidadCounts[$disponibilidad->value] = $group->where('disponibilidad', $disponibilidad)->count();
+                }
+
+                $estadoCounts = [];
+                foreach (EstadoFisico::cases() as $estado) {
+                    $estadoCounts[$estado->value] = $group->where('estado', $estado)->count();
+                }
+
                 return [
-                    $row->ubicacion->codigo ?? '',
-                    $row->ubicacion->nombre ?? '?',
-                    $row->articulo->nombre ?? '?',
-                    $row->total,
+                    $first->ubicacion->codigo ?? '',
+                    $first->ubicacion->nombre ?? '',
+                    $first->articulo->nombre ?? '',
+                    $group->count(),
+                    $disponibilidadCounts[Disponibilidad::EN_USO->value] ?? 0,
+                    $disponibilidadCounts[Disponibilidad::EN_REPARACION->value] ?? 0,
+                    $disponibilidadCounts[Disponibilidad::EXTRAVIADO->value] ?? 0,
+                    $disponibilidadCounts[Disponibilidad::DE_BAJA->value] ?? 0,
+                    $estadoCounts[EstadoFisico::BUENO->value] ?? 0,
+                    $estadoCounts[EstadoFisico::REGULAR->value] ?? 0,
+                    $estadoCounts[EstadoFisico::MALO->value] ?? 0,
+                    $estadoCounts[EstadoFisico::SIN_ESTADO->value] ?? 0,
                 ];
             })
+            ->values()
             ->toArray();
     }
 }

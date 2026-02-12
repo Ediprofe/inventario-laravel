@@ -23,6 +23,10 @@
             <span class="info-label">Total Items:</span>
             <span class="info-value" style="font-size: 11pt; font-weight: bold;">{{ $data['total'] }}</span>
         </div>
+        <div class="info-row">
+            <span class="info-label">Items En Uso:</span>
+            <span class="info-value" style="font-size: 10pt; font-weight: bold;">{{ $data['total_en_uso'] ?? 0 }}</span>
+        </div>
     </div>
 
     {{-- Resumen de Inventario --}}
@@ -30,11 +34,12 @@
     <table>
         <thead>
             <tr>
-                <th style="width: 15%">Cód. Ubicación</th>
-                <th style="width: 30%">Ubicación</th>
-                <th style="width: 35%">Artículo</th>
-                <th style="width: 10%; text-align: center">Cant.</th>
-                <th style="width: 10%">Estado</th>
+                <th style="width: 13%">Cód. Ubicación</th>
+                <th style="width: 22%">Ubicación</th>
+                <th style="width: 25%">Artículo</th>
+                <th style="width: 8%; text-align: center">Cant.</th>
+                <th style="width: 16%">Disponibilidad</th>
+                <th style="width: 16%">Estado</th>
             </tr>
         </thead>
         <tbody>
@@ -44,6 +49,13 @@
                     <td>{{ $item['ubicacion_nombre'] }}</td>
                     <td style="font-weight: bold;">{{ $item['articulo'] }}</td>
                     <td style="text-align: center; border-left: 1px solid #e2e8f0;">{{ $item['cantidad'] }}</td>
+                    <td>
+                        @foreach($item['disponibilidades'] as $disponibilidad)
+                            <div style="font-size: 7.5pt; color: #475569;">
+                                {{ $disponibilidad['label'] }}: <strong>{{ $disponibilidad['count'] }}</strong>
+                            </div>
+                        @endforeach
+                    </td>
                     <td>
                         @foreach($item['estados'] as $estado)
                             <div style="font-size: 7.5pt; color: #475569;">
@@ -56,6 +68,7 @@
             <tr class="total-row">
                 <td colspan="3" style="text-align: right; text-transform: uppercase; font-size: 8pt; letter-spacing: 1px;">Suma Total de Items</td>
                 <td style="text-align: center; font-size: 11pt;">{{ $data['total'] }}</td>
+                <td></td>
                 <td></td>
             </tr>
         </tbody>

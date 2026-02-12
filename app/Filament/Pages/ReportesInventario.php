@@ -377,7 +377,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
         try {
             $url = $this->emailModalType === 'ubicacion'
                 ? route('reportes.pdf.ubicacion.enviar', $this->emailTargetId)
-                : route('reportes.excel.responsable.enviar', $this->emailTargetId);
+                : route('reportes.pdf.responsable.enviar', $this->emailTargetId);
 
             $response = Http::withCookies(request()->cookies->all(), request()->getHost())
                 ->withHeaders([
@@ -412,4 +412,3 @@ class ReportesInventario extends Page implements HasForms, HasTable
         }
     }
 }
-

@@ -37,7 +37,7 @@ class DetalleResponsableSheet implements FromArray, WithTitle, WithStyles, Shoul
 
     public function array(): array
     {
-        return Item::enUso()
+        return Item::query()
             ->where('responsable_id', $this->responsableId)
             ->with(['articulo', 'ubicacion', 'sede'])
             ->orderBy('ubicacion_id')
@@ -60,4 +60,5 @@ class DetalleResponsableSheet implements FromArray, WithTitle, WithStyles, Shoul
             })
             ->toArray();
     }
+
 }
