@@ -20,7 +20,6 @@ use Filament\Tables\Table;
 use Filament\Tables;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Http;
 
 class ReportesInventario extends Page implements HasForms, HasTable
 {
@@ -375,19 +374,14 @@ class ReportesInventario extends Page implements HasForms, HasTable
         $this->emailSending = true;
 
         try {
-            $url = $this->emailModalType === 'ubicacion'
-                ? route('reportes.pdf.ubicacion.enviar', $this->emailTargetId)
-                : route('reportes.pdf.responsable.enviar', $this->emailTargetId);
+            $controller = app(\App\Http\Controllers\ReportesPdfController::class);
+            $response = $this->emailModalType === 'ubicacion'
+                ? $controller->enviarUbicacion((int) $this->emailTargetId)
+                : $controller->enviarResponsable((int) $this->emailTargetId);
 
-            $response = Http::withCookies(request()->cookies->all(), request()->getHost())
-                ->withHeaders([
-                    'X-CSRF-TOKEN' => csrf_token(),
-                ])
-                ->post($url);
+            $data = $response->getData(true);
 
-            $data = $response->json();
-
-            if ($response->successful() && ($data['success'] ?? false)) {
+            if ($response->getStatusCode() >= 200 && $response->getStatusCode() < 300 && ($data['success'] ?? false)) {
                 Notification::make()
                     ->title('Correo enviado')
                     ->body($data['message'] ?? 'El reporte fue enviado exitosamente')

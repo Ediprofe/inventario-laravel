@@ -79,7 +79,7 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400">Items en esta ubicación agrupados por artículo</p>
                         </div>
                         <div class="flex items-center gap-3">
-                            <a href="{{ route('reportes.pdf.ubicacion', $this->ubicacionId) }}" 
+                            <a href="{{ route('reportes.pdf.ubicacion', $this->ubicacionId, false) }}" 
                                target="_blank"
                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -87,7 +87,7 @@
                                 </svg>
                                 PDF
                             </a>
-                            <a href="{{ route('reportes.excel.ubicacion', $this->ubicacionId) }}" 
+                            <a href="{{ route('reportes.excel.ubicacion', $this->ubicacionId, false) }}" 
                                target="_blank"
                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -95,7 +95,7 @@
                                 </svg>
                                 Excel
                             </a>
-                            <button onclick="enviarInventario('{{ route('reportes.pdf.ubicacion.enviar', $this->ubicacionId) }}', this)"
+                            <button onclick="enviarInventario('{{ route('reportes.pdf.ubicacion.enviar', $this->ubicacionId, false) }}', this)"
                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -196,7 +196,7 @@
                         </div>
                     </div>
                     <div class="ml-auto flex items-center gap-3">
-                        <a href="{{ route('reportes.pdf.responsable', $this->responsableFilterId) }}" 
+                        <a href="{{ route('reportes.pdf.responsable', $this->responsableFilterId, false) }}" 
                            target="_blank"
                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -204,7 +204,7 @@
                             </svg>
                             PDF
                         </a>
-                        <a href="{{ route('reportes.excel.responsable', $this->responsableFilterId) }}" 
+                        <a href="{{ route('reportes.excel.responsable', $this->responsableFilterId, false) }}" 
                            target="_blank"
                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -212,7 +212,7 @@
                             </svg>
                             Excel
                         </a>
-                        <button onclick="enviarInventario('{{ route('reportes.pdf.responsable.enviar', $this->responsableFilterId) }}', this)"
+                        <button onclick="enviarInventario('{{ route('reportes.pdf.responsable.enviar', $this->responsableFilterId, false) }}', this)"
                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
