@@ -1,21 +1,17 @@
 <x-filament-panels::page>
-    {{-- Tabs Navigation --}}
-    <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg w-max mb-6 dark:bg-gray-800">
-        <button wire:click="$set('activeTab', 'ubicacion')"
-                class="px-4 py-2 rounded-md text-sm font-medium transition-colors
-                       {{ $activeTab === 'ubicacion' ? 'bg-white text-primary-600 shadow-sm dark:bg-gray-700 dark:text-primary-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400' }}">
+    <div class="flex flex-wrap gap-2 mb-6">
+        <a href="/admin/reportes-inventario"
+           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $activeTab === 'ubicacion' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300' }}">
             📍 Por Ubicación
-        </button>
-        <button wire:click="$set('activeTab', 'responsable')"
-                class="px-4 py-2 rounded-md text-sm font-medium transition-colors
-                       {{ $activeTab === 'responsable' ? 'bg-white text-primary-600 shadow-sm dark:bg-gray-700 dark:text-primary-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400' }}">
+        </a>
+        <a href="/admin/reportes-inventario-responsables"
+           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $activeTab === 'responsable' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300' }}">
             👤 Por Responsable
-        </button>
-        <button wire:click="$set('activeTab', 'consolidado')"
-                class="px-4 py-2 rounded-md text-sm font-medium transition-colors
-                       {{ $activeTab === 'consolidado' ? 'bg-white text-primary-600 shadow-sm dark:bg-gray-700 dark:text-primary-400' : 'text-gray-500 hover:text-gray-700 dark:text-gray-400' }}">
+        </a>
+        <a href="/admin/reportes-inventario-consolidado"
+           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $activeTab === 'consolidado' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300' }}">
             📦 Consolidado Global
-        </button>
+        </a>
     </div>
 
     {{-- TAB 1: POR UBICACIÓN --}}
@@ -38,6 +34,21 @@
                             <option value="{{ $ubi->id }}">{{ $ubi->codigo }} - {{ $ubi->nombre }}</option>
                         @endforeach
                     </select>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-sm font-medium text-gray-700 dark:text-gray-200">Navegación rápida</label>
+                    <div class="flex gap-2">
+                        <button wire:click="goToPreviousUbicacion"
+                                @disabled(!$this->canGoPreviousUbicacion)
+                                class="inline-flex items-center gap-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-300">
+                            ← Anterior
+                        </button>
+                        <button wire:click="goToNextUbicacion"
+                                @disabled(!$this->canGoNextUbicacion)
+                                class="inline-flex items-center gap-1 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed dark:bg-gray-800 dark:text-gray-300">
+                            Siguiente →
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -79,6 +90,14 @@
                             <p class="text-sm text-gray-500 dark:text-gray-400">Items en esta ubicación agrupados por artículo</p>
                         </div>
                         <div class="flex items-center gap-3">
+                            <a href="{{ $this->createItemUrl }}"
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                                + Nuevo ítem aquí
+                            </a>
+                            <a href="{{ $this->batchItemsUrl }}"
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors">
+                                + Agregar lote aquí
+                            </a>
                             <a href="{{ route('reportes.pdf.ubicacion', $this->ubicacionId, false) }}" 
                                target="_blank"
                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">

@@ -16,4 +16,15 @@ class EditItem extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+
+    protected function getRedirectUrl(): string
+    {
+        $returnTo = request()->query('return_to');
+
+        if (is_string($returnTo) && str_starts_with($returnTo, '/')) {
+            return $returnTo;
+        }
+
+        return static::getResource()::getUrl('index');
+    }
 }

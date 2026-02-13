@@ -20,6 +20,8 @@ use Filament\Tables\Table;
 use Filament\Tables;
 use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Session;
+use Livewire\Attributes\Url;
 
 class ReportesInventario extends Page implements HasForms, HasTable
 {
@@ -47,7 +49,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
                 Tables\Actions\Action::make('edit')
                     ->label('Editar')
                     ->icon('heroicon-o-pencil')
-                    ->url(fn ($record) => ItemResource::getUrl('edit', ['record' => $record])),
+                    ->url(fn ($record) => '/admin/items/' . $record->getKey() . '/edit?return_to=' . urlencode($this->getContextUrl())),
             ])
             ->columns(
                 collect($table->getColumns())
@@ -56,25 +58,32 @@ class ReportesInventario extends Page implements HasForms, HasTable
             );
     }
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
-    protected static ?string $navigationLabel = 'Reportes de Inventario';
-    protected static ?string $title = 'Reportes y Analítica';
+    protected static ?string $navigationLabel = 'Inventario por Ubicación';
+    protected static ?string $title = 'Inventario por Ubicación';
     protected static ?string $slug = 'reportes-inventario';
-    
+    protected static ?int $navigationSort = 20;
+
     protected static string $view = 'filament.pages.reportes-inventario';
 
-    // Tabs
-    public $activeTab = 'ubicacion'; // ubicacion, responsable, consolidado
+    protected string $defaultTab = 'ubicacion';
+    public bool $showTabNavigation = false;
+
+    // Current mode
+    public string $activeTab = 'ubicacion'; // ubicacion, responsable, consolidado
 
     // Filters - Ubicacion
-    public $sedeId;
-    public $ubicacionId;
+    #[Url(as: 'sede', history: true)]
+    public ?int $sedeId = null;
+    #[Url(as: 'ubicacion', history: true)]
+    public ?int $ubicacionId = null;
     
     // Filters - Responsable
-    public $responsableFilterId;
+    #[Url(as: 'responsable', history: true)]
+    public ?int $responsableFilterId = null;
 
     // Filters - Consolidado
-    public $disponibilidadFilter = 'en_uso';
-    public $articuloFilterId = '';
+    #[Url(as: 'articulo', history: true)]
+    public ?int $articuloFilterId = null;
 
     // Email Modal Properties
     public bool $showEmailModal = false;
@@ -86,13 +95,89 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     public function mount()
     {
-        // Defaults
-        $firstSede = Sede::first();
-        if ($firstSede) {
-            $this->sedeId = $firstSede->id;
-            $firstUbi = Ubicacion::where('sede_id', $this->sedeId)->first();
-            $this->ubicacionId = $firstUbi?->id;
+        $this->activeTab = $this->defaultTab;
+
+        if ($this->activeTab === 'ubicacion') {
+            $this->restoreUbicacionFilters();
         }
+
+        if ($this->activeTab === 'responsable') {
+            $this->restoreResponsableFilter();
+        }
+
+        if ($this->activeTab === 'consolidado') {
+            $this->restoreConsolidadoFilter();
+        }
+    }
+
+    protected function restoreUbicacionFilters(): void
+    {
+        if (!$this->sedeId) {
+            $this->sedeId = Session::get('reportes.ubicacion.sede_id');
+        }
+
+        if (!$this->ubicacionId) {
+            $this->ubicacionId = Session::get('reportes.ubicacion.ubicacion_id');
+        }
+
+        if (!$this->sedeId) {
+            $this->sedeId = Sede::query()->value('id');
+        }
+
+        if ($this->sedeId && (!$this->ubicacionId || !Ubicacion::where('id', $this->ubicacionId)->where('sede_id', $this->sedeId)->exists())) {
+            $this->ubicacionId = Ubicacion::where('sede_id', $this->sedeId)->value('id');
+        }
+
+        $this->persistUbicacionFilters();
+    }
+
+    protected function restoreResponsableFilter(): void
+    {
+        if (!$this->responsableFilterId) {
+            $this->responsableFilterId = Session::get('reportes.responsable.id');
+        }
+    }
+
+    protected function restoreConsolidadoFilter(): void
+    {
+        if (!$this->articuloFilterId) {
+            $this->articuloFilterId = Session::get('reportes.consolidado.articulo_id');
+        }
+    }
+
+    protected function persistUbicacionFilters(): void
+    {
+        Session::put('reportes.ubicacion.sede_id', $this->sedeId);
+        Session::put('reportes.ubicacion.ubicacion_id', $this->ubicacionId);
+    }
+
+    public function updatedSedeId($value): void
+    {
+        $this->sedeId = $value ? (int) $value : null;
+
+        if ($this->sedeId && (!$this->ubicacionId || !Ubicacion::where('id', $this->ubicacionId)->where('sede_id', $this->sedeId)->exists())) {
+            $this->ubicacionId = Ubicacion::where('sede_id', $this->sedeId)->value('id');
+        }
+
+        $this->persistUbicacionFilters();
+    }
+
+    public function updatedUbicacionId($value): void
+    {
+        $this->ubicacionId = $value ? (int) $value : null;
+        $this->persistUbicacionFilters();
+    }
+
+    public function updatedResponsableFilterId($value): void
+    {
+        $this->responsableFilterId = $value ? (int) $value : null;
+        Session::put('reportes.responsable.id', $this->responsableFilterId);
+    }
+
+    public function updatedArticuloFilterId($value): void
+    {
+        $this->articuloFilterId = $value ? (int) $value : null;
+        Session::put('reportes.consolidado.articulo_id', $this->articuloFilterId);
     }
 
     // --- Computed Data Helpers ---
@@ -104,8 +189,61 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     public function getUbicacionesForSedeProperty()
     {
-        if (!$this->sedeId) return [];
+        if (!$this->sedeId) {
+            return collect();
+        }
+
         return Ubicacion::where('sede_id', $this->sedeId)->get();
+    }
+
+    public function getCanGoPreviousUbicacionProperty(): bool
+    {
+        if (!$this->ubicacionId) {
+            return false;
+        }
+
+        $ubicaciones = $this->ubicacionesForSede->pluck('id')->values();
+        $index = $ubicaciones->search($this->ubicacionId);
+
+        return $index !== false && $index > 0;
+    }
+
+    public function getCanGoNextUbicacionProperty(): bool
+    {
+        if (!$this->ubicacionId) {
+            return false;
+        }
+
+        $ubicaciones = $this->ubicacionesForSede->pluck('id')->values();
+        $index = $ubicaciones->search($this->ubicacionId);
+
+        return $index !== false && $index < ($ubicaciones->count() - 1);
+    }
+
+    public function goToPreviousUbicacion(): void
+    {
+        $ubicaciones = $this->ubicacionesForSede->pluck('id')->values();
+        $index = $ubicaciones->search($this->ubicacionId);
+
+        if ($index === false || $index <= 0) {
+            return;
+        }
+
+        $this->ubicacionId = $ubicaciones->get($index - 1);
+        $this->persistUbicacionFilters();
+    }
+
+    public function goToNextUbicacion(): void
+    {
+        $ubicaciones = $this->ubicacionesForSede->pluck('id')->values();
+        $index = $ubicaciones->search($this->ubicacionId);
+
+        if ($index === false || $index >= ($ubicaciones->count() - 1)) {
+            return;
+        }
+
+        $this->ubicacionId = $ubicaciones->get($index + 1);
+        $this->persistUbicacionFilters();
     }
 
     public function getResponsablesProperty()
@@ -279,6 +417,54 @@ class ReportesInventario extends Page implements HasForms, HasTable
             'sedes' => $sedes,
             'rows' => $matrix
         ];
+    }
+
+    public function getCreateItemUrlProperty(): string
+    {
+        $query = [
+            'sede_id' => $this->sedeId,
+            'ubicacion_id' => $this->ubicacionId,
+            'responsable_id' => $this->currentUbicacion?->responsable_id,
+            'return_to' => $this->getContextUrl(),
+        ];
+
+        return '/admin/items/create?' . http_build_query(array_filter($query, fn ($value) => $value !== null && $value !== ''));
+    }
+
+    public function getBatchItemsUrlProperty(): string
+    {
+        $query = [
+            'sede_id' => $this->sedeId,
+            'ubicacion_id' => $this->ubicacionId,
+            'responsable_id' => $this->currentUbicacion?->responsable_id,
+            'open_batch' => 1,
+            'return_to' => $this->getContextUrl(),
+        ];
+
+        return '/admin/items?' . http_build_query(array_filter($query, fn ($value) => $value !== null && $value !== ''));
+    }
+
+    protected function getContextUrl(): string
+    {
+        $basePath = request()->path();
+
+        $query = match ($this->activeTab) {
+            'ubicacion' => [
+                'sede' => $this->sedeId,
+                'ubicacion' => $this->ubicacionId,
+            ],
+            'responsable' => [
+                'responsable' => $this->responsableFilterId,
+            ],
+            'consolidado' => [
+                'articulo' => $this->articuloFilterId,
+            ],
+            default => [],
+        };
+
+        $query = array_filter($query, fn ($value) => $value !== null && $value !== '');
+
+        return '/' . $basePath . (empty($query) ? '' : '?' . http_build_query($query));
     }
     
     protected function getColorForEstado(EstadoFisico $estado): string

@@ -4,11 +4,33 @@ namespace App\Filament\Resources\ItemResource\Pages;
 
 use App\Filament\Resources\ItemResource;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 
 class ListItems extends ListRecords
 {
     protected static string $resource = ItemResource::class;
+
+    public ?int $prefillSedeId = null;
+    public ?int $prefillUbicacionId = null;
+    public ?int $prefillResponsableId = null;
+
+    public function mount(): void
+    {
+        parent::mount();
+
+        $this->prefillSedeId = request()->integer('sede_id') ?: null;
+        $this->prefillUbicacionId = request()->integer('ubicacion_id') ?: null;
+        $this->prefillResponsableId = request()->integer('responsable_id') ?: null;
+
+        if (request()->boolean('open_batch')) {
+            Notification::make()
+                ->title('Contexto de lote precargado')
+                ->body('Haz clic en "Agregar Lote". Los datos de sede, ubicación y responsable ya vienen diligenciados.')
+                ->info()
+                ->send();
+        }
+    }
 
     protected function getHeaderActions(): array
     {
@@ -70,6 +92,7 @@ class ListItems extends ListRecords
                             \Filament\Forms\Components\Select::make('sede_id')
                                 ->label('Sede')
                                 ->options(\App\Models\Sede::pluck('nombre', 'id'))
+                                ->default(fn () => $this->prefillSedeId)
                                 ->required()
                                 ->live()
                                 ->afterStateUpdated(fn (\Filament\Forms\Set $set) => $set('ubicacion_id', null)),
@@ -80,6 +103,7 @@ class ListItems extends ListRecords
                                         ->get()
                                         ->mapWithKeys(fn ($ubi) => [$ubi->id => $ubi->codigo . ' - ' . $ubi->nombre])
                                 )
+                                ->default(fn () => $this->prefillUbicacionId)
                                 ->required()
                                 ->searchable(),
                             \Filament\Forms\Components\Select::make('articulo_id')
@@ -90,6 +114,7 @@ class ListItems extends ListRecords
                             \Filament\Forms\Components\Select::make('responsable_id')
                                 ->label('Responsable')
                                 ->options(\App\Models\Responsable::all()->pluck('nombre_completo', 'id'))
+                                ->default(fn () => $this->prefillResponsableId)
                                 ->searchable(),
                             \Filament\Forms\Components\Select::make('estado')
                                 ->label('Estado')
