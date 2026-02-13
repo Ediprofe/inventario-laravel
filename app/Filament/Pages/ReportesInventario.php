@@ -51,8 +51,43 @@ class ReportesInventario extends Page implements HasForms, HasTable
                     return $query;
                 }
                 if ($this->activeTab === 'responsable' && $this->responsableFilterId) {
-                    return Item::enUso()->where('responsable_id', $this->responsableFilterId);
+                    $query = Item::enUso()->where('responsable_id', $this->responsableFilterId);
+
+                    if ($this->detalleResponsableArticuloId) {
+                        $query->where('articulo_id', $this->detalleResponsableArticuloId);
+                    }
+
+                    if ($this->detalleResponsableUbicacionId) {
+                        $query->where('ubicacion_id', $this->detalleResponsableUbicacionId);
+                    }
+
+                    if ($this->detalleResponsableEstado) {
+                        $query->where('estado', $this->detalleResponsableEstado);
+                    }
+
+                    return $query;
                 }
+
+                if ($this->activeTab === 'consolidado') {
+                    $query = Item::enUso();
+
+                    if ($this->detalleConsolidadoArticuloId) {
+                        $query->where('articulo_id', $this->detalleConsolidadoArticuloId);
+                    } elseif ($this->articuloFilterId) {
+                        $query->where('articulo_id', $this->articuloFilterId);
+                    }
+
+                    if ($this->detalleConsolidadoSedeId) {
+                        $query->where('sede_id', $this->detalleConsolidadoSedeId);
+                    }
+
+                    if ($this->detalleConsolidadoEstado) {
+                        $query->where('estado', $this->detalleConsolidadoEstado);
+                    }
+
+                    return $query;
+                }
+
                 return Item::query()->whereRaw('1 = 0');
             })
             ->actions([
@@ -112,6 +147,16 @@ class ReportesInventario extends Page implements HasForms, HasTable
     // Quick filters - Detalle por ubicación
     public ?int $detalleArticuloId = null;
     public ?string $detalleEstado = null;
+
+    // Quick filters - Detalle por responsable
+    public ?int $detalleResponsableArticuloId = null;
+    public ?int $detalleResponsableUbicacionId = null;
+    public ?string $detalleResponsableEstado = null;
+
+    // Quick filters - Detalle consolidado
+    public ?int $detalleConsolidadoArticuloId = null;
+    public ?int $detalleConsolidadoSedeId = null;
+    public ?string $detalleConsolidadoEstado = null;
 
     // Email Modal Properties
     public bool $showEmailModal = false;
@@ -201,12 +246,14 @@ class ReportesInventario extends Page implements HasForms, HasTable
     public function updatedResponsableFilterId($value): void
     {
         $this->responsableFilterId = $value ? (int) $value : null;
+        $this->limpiarFiltroDetalleResponsable();
         Session::put('reportes.responsable.id', $this->responsableFilterId);
     }
 
     public function updatedArticuloFilterId($value): void
     {
         $this->articuloFilterId = $value ? (int) $value : null;
+        $this->limpiarFiltroDetalleConsolidado();
         Session::put('reportes.consolidado.articulo_id', $this->articuloFilterId);
     }
 
@@ -384,27 +431,80 @@ class ReportesInventario extends Page implements HasForms, HasTable
     {
         if (!$this->responsableFilterId) return [];
         
-        // Resumen: Cód. Ubicación | Ubicación | Artículo | Cantidad
-        return Item::enUso()
+        // Resumen: Cód. Ubicación | Ubicación | Artículo | Cantidad + desglose por estado
+        $rawData = Item::enUso()
             ->where('responsable_id', $this->responsableFilterId)
-            ->selectRaw('articulo_id, ubicacion_id, count(*) as total')
+            ->selectRaw('articulo_id, ubicacion_id, estado, count(*) as total')
             ->with(['articulo', 'ubicacion'])
-            ->groupBy('articulo_id', 'ubicacion_id')
-            ->orderBy('ubicacion_id') // Group visually by location
-            ->get()
-            ->map(function ($row) {
+            ->groupBy('articulo_id', 'ubicacion_id', 'estado')
+            ->orderBy('ubicacion_id')
+            ->get();
+
+        return $rawData
+            ->groupBy(fn ($row) => $row->articulo_id . '_' . $row->ubicacion_id)
+            ->map(function ($items) {
+                $first = $items->first();
+
+                $breakdown = [];
+                foreach (EstadoFisico::cases() as $estado) {
+                    $qty = $items->where('estado', $estado)->sum('total');
+                    if ($qty > 0) {
+                        $breakdown[] = [
+                            'value' => $estado->value,
+                            'label' => $estado->getLabel(),
+                            'color' => $this->getColorForEstado($estado),
+                            'qty' => $qty,
+                        ];
+                    }
+                }
+
                 return [
-                    'codigo_ubicacion' => $row->ubicacion->codigo ?? '',
-                    'ubicacion' => $row->ubicacion->nombre ?? '?',
-                    'articulo' => $row->articulo->nombre ?? '?',
-                    'cantidad' => $row->total,
+                    'articulo_id' => $first->articulo_id,
+                    'ubicacion_id' => $first->ubicacion_id,
+                    'codigo_ubicacion' => $first->ubicacion->codigo ?? '',
+                    'ubicacion' => $first->ubicacion->nombre ?? '?',
+                    'articulo' => $first->articulo->nombre ?? '?',
+                    'cantidad' => $items->sum('total'),
+                    'breakdown' => $breakdown,
                 ];
-            });
+            })
+            ->values();
     }
 
     public function getTotalItemsResponsableProperty()
     {
         return $this->itemsPorResponsable->sum('cantidad');
+    }
+
+    public function filtrarDetalleResponsable(int $articuloId, int $ubicacionId, string $estado): void
+    {
+        $this->detalleResponsableArticuloId = $articuloId;
+        $this->detalleResponsableUbicacionId = $ubicacionId;
+        $this->detalleResponsableEstado = $estado;
+        $this->resetTable();
+    }
+
+    public function limpiarFiltroDetalleResponsable(): void
+    {
+        $this->detalleResponsableArticuloId = null;
+        $this->detalleResponsableUbicacionId = null;
+        $this->detalleResponsableEstado = null;
+        $this->resetTable();
+    }
+
+    public function getDetalleResponsableArticuloSeleccionadoProperty(): ?Articulo
+    {
+        return $this->detalleResponsableArticuloId ? Articulo::find($this->detalleResponsableArticuloId) : null;
+    }
+
+    public function getDetalleResponsableUbicacionSeleccionadaProperty(): ?Ubicacion
+    {
+        return $this->detalleResponsableUbicacionId ? Ubicacion::find($this->detalleResponsableUbicacionId) : null;
+    }
+
+    public function getDetalleResponsableEstadoSeleccionadoLabelProperty(): ?string
+    {
+        return $this->detalleResponsableEstado ? EstadoFisico::tryFrom($this->detalleResponsableEstado)?->getLabel() : null;
     }
 
     // --- Tab 3: Matrix (Consolidado) ---
@@ -456,6 +556,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
                     $qty = $cellData->where('estado', $estado)->sum('total');
                     if ($qty > 0) {
                         $breakdown[$estado->value] = [
+                            'value' => $estado->value,
                             'label' => $estado->getLabel(),
                             'color' => $this->getColorForEstado($estado),
                             'qty' => $qty
@@ -481,6 +582,37 @@ class ReportesInventario extends Page implements HasForms, HasTable
             'sedes' => $sedes,
             'rows' => $matrix
         ];
+    }
+
+    public function filtrarDetalleConsolidado(int $articuloId, int $sedeId, string $estado): void
+    {
+        $this->detalleConsolidadoArticuloId = $articuloId;
+        $this->detalleConsolidadoSedeId = $sedeId;
+        $this->detalleConsolidadoEstado = $estado;
+        $this->resetTable();
+    }
+
+    public function limpiarFiltroDetalleConsolidado(): void
+    {
+        $this->detalleConsolidadoArticuloId = null;
+        $this->detalleConsolidadoSedeId = null;
+        $this->detalleConsolidadoEstado = null;
+        $this->resetTable();
+    }
+
+    public function getDetalleConsolidadoArticuloSeleccionadoProperty(): ?Articulo
+    {
+        return $this->detalleConsolidadoArticuloId ? Articulo::find($this->detalleConsolidadoArticuloId) : null;
+    }
+
+    public function getDetalleConsolidadoSedeSeleccionadaProperty(): ?Sede
+    {
+        return $this->detalleConsolidadoSedeId ? Sede::find($this->detalleConsolidadoSedeId) : null;
+    }
+
+    public function getDetalleConsolidadoEstadoSeleccionadoLabelProperty(): ?string
+    {
+        return $this->detalleConsolidadoEstado ? EstadoFisico::tryFrom($this->detalleConsolidadoEstado)?->getLabel() : null;
     }
 
     public function getCreateItemUrlProperty(): string

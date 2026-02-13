@@ -276,6 +276,7 @@
                                 <th class="px-6 py-3 font-medium">Ubicación</th>
                                 <th class="px-6 py-3 font-medium">Artículo</th>
                                 <th class="px-6 py-3 font-medium text-right">Cantidad</th>
+                                <th class="px-6 py-3 font-medium">Estado</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -294,11 +295,29 @@
                                             {{ $row['cantidad'] }}
                                         </span>
                                     </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach($row['breakdown'] as $b)
+                                                <button
+                                                    wire:click="filtrarDetalleResponsable({{ $row['articulo_id'] }}, {{ $row['ubicacion_id'] }}, '{{ $b['value'] }}')"
+                                                    type="button"
+                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition hover:opacity-80
+                                                    {{ match($b['color']) {
+                                                        'success' => 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+                                                        'warning' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
+                                                        'danger'  => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+                                                        default   => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                                                    } }}">
+                                                    {{ $b['label'] }}: {{ $b['qty'] }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </td>
                                 </tr>
                             @endforeach
                             @if(count($this->itemsPorResponsable) === 0)
                                 <tr>
-                                    <td colspan="4" class="px-6 py-12 text-center text-gray-500">Este responsable no tiene items asignados.</td>
+                                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">Este responsable no tiene items asignados.</td>
                                 </tr>
                             @endif
                         </tbody>
@@ -306,11 +325,33 @@
                 </div>
 
                 <div class="mt-8">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalle de Items Asignados</h3>
-                        <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full dark:bg-blue-900/30 dark:text-blue-300">
-                            Solo ítems "En Uso"
-                        </span>
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalle de Items Asignados</h3>
+                            @if($this->detalleResponsableArticuloSeleccionado && $this->detalleResponsableEstadoSeleccionadoLabel)
+                                <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                                    Filtro activo: <strong>{{ $this->detalleResponsableArticuloSeleccionado->nombre }}</strong>
+                                    @if($this->detalleResponsableUbicacionSeleccionada)
+                                        en <strong>{{ $this->detalleResponsableUbicacionSeleccionada->codigo }}</strong>
+                                    @endif
+                                    + <strong>{{ $this->detalleResponsableEstadoSeleccionadoLabel }}</strong>
+                                </p>
+                            @endif
+                        </div>
+                        <div class="flex items-center gap-2">
+                            @if($this->detalleResponsableArticuloSeleccionado && $this->detalleResponsableEstadoSeleccionadoLabel)
+                                <button
+                                    wire:click="limpiarFiltroDetalleResponsable"
+                                    type="button"
+                                    class="px-3 py-1 bg-amber-100 text-amber-800 text-xs rounded-full hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300"
+                                >
+                                    Limpiar filtro rápido
+                                </button>
+                            @endif
+                            <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full dark:bg-blue-900/30 dark:text-blue-300">
+                                Solo ítems "En Uso"
+                            </span>
+                        </div>
                     </div>
                     <div class="overflow-x-auto">
                         {{ $this->table }}
@@ -380,7 +421,10 @@
                                                 {{-- Breakdown List --}}
                                                 <div class="w-full space-y-1">
                                                     @foreach($cell['breakdown'] as $b)
-                                                        <div class="flex items-center justify-between px-2 py-1 rounded text-xs
+                                                        <button
+                                                            wire:click="filtrarDetalleConsolidado({{ $row['id'] }}, {{ $sede->id }}, '{{ $b['value'] }}')"
+                                                            type="button"
+                                                            class="w-full flex items-center justify-between px-2 py-1 rounded text-xs transition hover:opacity-80
                                                             {{ match($b['color']) {
                                                                 'success' => 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
                                                                 'warning' => 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
@@ -389,7 +433,7 @@
                                                             } }}">
                                                             <span class="font-medium">{{ $b['label'] }}</span>
                                                             <span class="font-bold border-l border-current pl-1.5 ml-1.5 opacity-75">{{ $b['qty'] }}</span>
-                                                        </div>
+                                                        </button>
                                                     @endforeach
                                                 </div>
                                             </div>
@@ -405,6 +449,40 @@
                         @endforeach
                     </tbody>
                  </table>
+            </div>
+
+            <div class="mt-8">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalle de Items (Consolidado)</h3>
+                        @if($this->detalleConsolidadoArticuloSeleccionado && $this->detalleConsolidadoEstadoSeleccionadoLabel)
+                            <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                                Filtro activo: <strong>{{ $this->detalleConsolidadoArticuloSeleccionado->nombre }}</strong>
+                                @if($this->detalleConsolidadoSedeSeleccionada)
+                                    en <strong>{{ $this->detalleConsolidadoSedeSeleccionada->nombre }}</strong>
+                                @endif
+                                + <strong>{{ $this->detalleConsolidadoEstadoSeleccionadoLabel }}</strong>
+                            </p>
+                        @endif
+                    </div>
+                    <div class="flex items-center gap-2">
+                        @if($this->detalleConsolidadoArticuloSeleccionado && $this->detalleConsolidadoEstadoSeleccionadoLabel)
+                            <button
+                                wire:click="limpiarFiltroDetalleConsolidado"
+                                type="button"
+                                class="px-3 py-1 bg-amber-100 text-amber-800 text-xs rounded-full hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300"
+                            >
+                                Limpiar filtro rápido
+                            </button>
+                        @endif
+                        <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full dark:bg-blue-900/30 dark:text-blue-300">
+                            Solo ítems "En Uso"
+                        </span>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    {{ $this->table }}
+                </div>
             </div>
         </div>
     @endif
