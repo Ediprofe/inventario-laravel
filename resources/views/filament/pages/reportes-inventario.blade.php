@@ -131,8 +131,8 @@
                             <tr>
                                 <th class="px-6 py-3 font-medium">Artículo</th>
                                 <th class="px-6 py-3 font-medium text-right">Cantidad</th>
-                                <th class="px-6 py-3 font-medium">Estado</th>
                                 <th class="px-6 py-3 font-medium">Disponibilidad</th>
+                                <th class="px-6 py-3 font-medium">Estado</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -146,9 +146,9 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-wrap gap-1">
-                                            @foreach($row['estado_breakdown'] as $b)
+                                            @foreach($row['disponibilidad_breakdown'] as $b)
                                                 <button
-                                                    wire:click="filtrarDetalleUbicacion({{ $row['articulo_id'] }}, '{{ $b['value'] }}')"
+                                                    wire:click="filtrarDisponibilidadUbicacion({{ $row['articulo_id'] }}, '{{ $b['value'] }}')"
                                                     type="button"
                                                     class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition hover:opacity-80
                                                     {{ match($b['color']) {
@@ -165,9 +165,9 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-wrap gap-1">
-                                            @foreach($row['disponibilidad_breakdown'] as $b)
+                                            @foreach($row['estado_breakdown'] as $b)
                                                 <button
-                                                    wire:click="filtrarDisponibilidadUbicacion({{ $row['articulo_id'] }}, '{{ $b['value'] }}')"
+                                                    wire:click="filtrarDetalleUbicacion({{ $row['articulo_id'] }}, '{{ $b['value'] }}')"
                                                     type="button"
                                                     class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition hover:opacity-80
                                                     {{ match($b['color']) {
@@ -311,8 +311,8 @@
                                 <th class="px-6 py-3 font-medium">Ubicación</th>
                                 <th class="px-6 py-3 font-medium">Artículo</th>
                                 <th class="px-6 py-3 font-medium text-right">Cantidad</th>
-                                <th class="px-6 py-3 font-medium">Estado</th>
                                 <th class="px-6 py-3 font-medium">Disponibilidad</th>
+                                <th class="px-6 py-3 font-medium">Estado</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -333,9 +333,9 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-wrap gap-1">
-                                            @foreach($row['estado_breakdown'] as $b)
+                                            @foreach($row['disponibilidad_breakdown'] as $b)
                                                 <button
-                                                    wire:click="filtrarDetalleResponsable({{ $row['articulo_id'] }}, {{ $row['ubicacion_id'] }}, '{{ $b['value'] }}')"
+                                                    wire:click="filtrarDisponibilidadResponsable({{ $row['articulo_id'] }}, {{ $row['ubicacion_id'] }}, '{{ $b['value'] }}')"
                                                     type="button"
                                                     class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition hover:opacity-80
                                                     {{ match($b['color']) {
@@ -352,9 +352,9 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-wrap gap-1">
-                                            @foreach($row['disponibilidad_breakdown'] as $b)
+                                            @foreach($row['estado_breakdown'] as $b)
                                                 <button
-                                                    wire:click="filtrarDisponibilidadResponsable({{ $row['articulo_id'] }}, {{ $row['ubicacion_id'] }}, '{{ $b['value'] }}')"
+                                                    wire:click="filtrarDetalleResponsable({{ $row['articulo_id'] }}, {{ $row['ubicacion_id'] }}, '{{ $b['value'] }}')"
                                                     type="button"
                                                     class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition hover:opacity-80
                                                     {{ match($b['color']) {
@@ -477,11 +477,10 @@
                                                 {{-- Total --}}
                                                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Total: {{ $cell['total'] }}</span>
                                                 
-                                                {{-- Breakdown List --}}
                                                 <div class="w-full space-y-1">
-                                                    @foreach($cell['breakdown'] as $b)
+                                                    @foreach($cell['disponibilidad_breakdown'] as $b)
                                                         <button
-                                                            wire:click="filtrarDetalleConsolidado({{ $row['id'] }}, {{ $sede->id }}, '{{ $b['value'] }}')"
+                                                            wire:click="filtrarDisponibilidadConsolidado({{ $row['id'] }}, {{ $sede->id }}, '{{ $b['value'] }}')"
                                                             type="button"
                                                             class="w-full flex items-center justify-between px-2 py-1 rounded text-xs transition hover:opacity-80
                                                             {{ match($b['color']) {
@@ -499,9 +498,9 @@
 
                                                 <div class="w-full border-t border-gray-100 pt-1 dark:border-gray-800">
                                                     <div class="w-full space-y-1">
-                                                        @foreach($cell['disponibilidad_breakdown'] as $b)
+                                                        @foreach($cell['breakdown'] as $b)
                                                             <button
-                                                                wire:click="filtrarDisponibilidadConsolidado({{ $row['id'] }}, {{ $sede->id }}, '{{ $b['value'] }}')"
+                                                                wire:click="filtrarDetalleConsolidado({{ $row['id'] }}, {{ $sede->id }}, '{{ $b['value'] }}')"
                                                                 type="button"
                                                                 class="w-full flex items-center justify-between px-2 py-1 rounded text-xs transition hover:opacity-80
                                                                 {{ match($b['color']) {

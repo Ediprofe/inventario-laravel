@@ -2,7 +2,6 @@
 
 namespace App\Exports\Responsable;
 
-use App\Models\Responsable;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class ResponsableIndividualExport implements WithMultipleSheets
@@ -16,12 +15,10 @@ class ResponsableIndividualExport implements WithMultipleSheets
 
     public function sheets(): array
     {
-        $responsable = Responsable::find($this->responsableId);
-        $nombre = $responsable ? $responsable->nombre_completo : 'Responsable';
-
         return [
-            new DetalleResponsableSheet($this->responsableId, 'Detalle'),
-            new ResumenResponsableSheet($this->responsableId, 'Resumen'),
+            new ResumenResponsableSheet($this->responsableId, 'Resumen Ejecutivo'),
+            new DetalleResponsableSheet($this->responsableId, 'Detalle En Uso', true),
+            new DetalleResponsableSheet($this->responsableId, 'Detalle No En Uso', false),
         ];
     }
 }
