@@ -38,7 +38,17 @@ class ReportesInventario extends Page implements HasForms, HasTable
             ->query(function (Builder $query) {
                 // All queries are filtered by disponibilidad = 'en_uso' using scope
                 if ($this->activeTab === 'ubicacion' && $this->ubicacionId) {
-                    return Item::enUso()->where('ubicacion_id', $this->ubicacionId);
+                    $query = Item::enUso()->where('ubicacion_id', $this->ubicacionId);
+
+                    if ($this->detalleArticuloId) {
+                        $query->where('articulo_id', $this->detalleArticuloId);
+                    }
+
+                    if ($this->detalleEstado) {
+                        $query->where('estado', $this->detalleEstado);
+                    }
+
+                    return $query;
                 }
                 if ($this->activeTab === 'responsable' && $this->responsableFilterId) {
                     return Item::enUso()->where('responsable_id', $this->responsableFilterId);
@@ -53,7 +63,21 @@ class ReportesInventario extends Page implements HasForms, HasTable
             ])
             ->columns(
                 collect($table->getColumns())
-                    ->reject(fn ($column) => $column->getName() === 'disponibilidad')
+                    ->map(function ($column) {
+                        if (!method_exists($column, 'getName')) {
+                            return $column;
+                        }
+
+                        if (in_array($column->getName(), ['marca', 'serial', 'descripcion', 'observaciones', 'updated_at'], true)) {
+                            $column->toggleable(isToggledHiddenByDefault: false);
+                        }
+
+                        if (in_array($column->getName(), ['descripcion', 'observaciones'], true)) {
+                            $column->limit(120)->wrap();
+                        }
+
+                        return $column;
+                    })
                     ->toArray()
             );
     }
@@ -84,6 +108,10 @@ class ReportesInventario extends Page implements HasForms, HasTable
     // Filters - Consolidado
     #[Url(as: 'articulo', history: true)]
     public ?int $articuloFilterId = null;
+
+    // Quick filters - Detalle por ubicación
+    public ?int $detalleArticuloId = null;
+    public ?string $detalleEstado = null;
 
     // Email Modal Properties
     public bool $showEmailModal = false;
@@ -159,12 +187,14 @@ class ReportesInventario extends Page implements HasForms, HasTable
             $this->ubicacionId = Ubicacion::where('sede_id', $this->sedeId)->value('id');
         }
 
+        $this->limpiarFiltroDetalleUbicacion();
         $this->persistUbicacionFilters();
     }
 
     public function updatedUbicacionId($value): void
     {
         $this->ubicacionId = $value ? (int) $value : null;
+        $this->limpiarFiltroDetalleUbicacion();
         $this->persistUbicacionFilters();
     }
 
@@ -288,6 +318,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
                 $qty = $items->where('estado', $estado)->sum('total');
                 if ($qty > 0) {
                     $breakdown[] = [
+                        'value' => $estado->value,
                         'label' => $estado->getLabel(),
                         'color' => $this->getColorForEstado($estado),
                         'qty' => $qty,
@@ -296,6 +327,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
             }
             
             return [
+                'articulo_id' => $firstItem->articulo_id,
                 'articulo' => $firstItem->articulo->nombre ?? 'Desconocido',
                 'cantidad' => $totalQty,
                 'breakdown' => $breakdown,
@@ -306,6 +338,38 @@ class ReportesInventario extends Page implements HasForms, HasTable
     public function getTotalItemsUbicacionProperty()
     {
         return $this->itemsPorUbicacion->sum('cantidad');
+    }
+
+    public function filtrarDetalleUbicacion(int $articuloId, string $estado): void
+    {
+        $this->detalleArticuloId = $articuloId;
+        $this->detalleEstado = $estado;
+        $this->resetTable();
+    }
+
+    public function limpiarFiltroDetalleUbicacion(): void
+    {
+        $this->detalleArticuloId = null;
+        $this->detalleEstado = null;
+        $this->resetTable();
+    }
+
+    public function getDetalleArticuloSeleccionadoProperty(): ?Articulo
+    {
+        if (!$this->detalleArticuloId) {
+            return null;
+        }
+
+        return Articulo::find($this->detalleArticuloId);
+    }
+
+    public function getDetalleEstadoSeleccionadoLabelProperty(): ?string
+    {
+        if (!$this->detalleEstado) {
+            return null;
+        }
+
+        return EstadoFisico::tryFrom($this->detalleEstado)?->getLabel();
     }
 
     // --- Tab 2: Responsable Data ---

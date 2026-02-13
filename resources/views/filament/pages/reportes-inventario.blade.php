@@ -87,7 +87,7 @@
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center dark:border-gray-800">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Resumen de Inventario</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Items en esta ubicación agrupados por artículo</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Items en esta ubicación agrupados por artículo. Haz clic en un estado para filtrar el detalle.</p>
                         </div>
                         <div class="flex items-center gap-3">
                             <a href="{{ $this->createItemUrl }}"
@@ -146,7 +146,10 @@
                                     <td class="px-6 py-4">
                                         <div class="flex flex-wrap gap-1">
                                             @foreach($row['breakdown'] as $b)
-                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium
+                                                <button
+                                                    wire:click="filtrarDetalleUbicacion({{ $row['articulo_id'] }}, '{{ $b['value'] }}')"
+                                                    type="button"
+                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition hover:opacity-80
                                                     {{ match($b['color']) {
                                                         'success' => 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
                                                         'warning' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
@@ -154,7 +157,7 @@
                                                         default   => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
                                                     } }}">
                                                     {{ $b['label'] }}: {{ $b['qty'] }}
-                                                </span>
+                                                </button>
                                             @endforeach
                                         </div>
                                     </td>
@@ -174,13 +177,33 @@
 
             @if($this->currentUbicacion)
             <div class="mt-8">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalle de Items</h3>
-                    <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full dark:bg-blue-900/30 dark:text-blue-300">
-                        Solo ítems "En Uso"
-                    </span>
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalle de Items</h3>
+                        @if($this->detalleArticuloSeleccionado && $this->detalleEstadoSeleccionadoLabel)
+                            <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                                Filtro activo: <strong>{{ $this->detalleArticuloSeleccionado->nombre }}</strong> + <strong>{{ $this->detalleEstadoSeleccionadoLabel }}</strong>
+                            </p>
+                        @endif
+                    </div>
+                    <div class="flex items-center gap-2">
+                        @if($this->detalleArticuloSeleccionado && $this->detalleEstadoSeleccionadoLabel)
+                            <button
+                                wire:click="limpiarFiltroDetalleUbicacion"
+                                type="button"
+                                class="px-3 py-1 bg-amber-100 text-amber-800 text-xs rounded-full hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-300"
+                            >
+                                Limpiar filtro rápido
+                            </button>
+                        @endif
+                        <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full dark:bg-blue-900/30 dark:text-blue-300">
+                            Solo ítems "En Uso"
+                        </span>
+                    </div>
                 </div>
-                {{ $this->table }}
+                <div class="overflow-x-auto">
+                    {{ $this->table }}
+                </div>
             </div>
             @endif
         </div>
@@ -289,7 +312,9 @@
                             Solo ítems "En Uso"
                         </span>
                     </div>
-                     {{ $this->table }}
+                    <div class="overflow-x-auto">
+                        {{ $this->table }}
+                    </div>
                 </div>
             @endif
         </div>
