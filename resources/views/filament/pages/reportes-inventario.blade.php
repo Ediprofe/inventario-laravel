@@ -87,7 +87,7 @@
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center dark:border-gray-800">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Resumen de Inventario</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Items en esta ubicación agrupados por artículo. Haz clic en un estado para filtrar el detalle.</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Items en esta ubicación agrupados por artículo. Haz clic en Estado o Disponibilidad para filtrar el detalle.</p>
                         </div>
                         <div class="flex items-center gap-3">
                             <a href="{{ $this->createItemUrl }}"
@@ -132,6 +132,7 @@
                                 <th class="px-6 py-3 font-medium">Artículo</th>
                                 <th class="px-6 py-3 font-medium text-right">Cantidad</th>
                                 <th class="px-6 py-3 font-medium">Estado</th>
+                                <th class="px-6 py-3 font-medium">Disponibilidad</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -145,7 +146,7 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-wrap gap-1">
-                                            @foreach($row['breakdown'] as $b)
+                                            @foreach($row['estado_breakdown'] as $b)
                                                 <button
                                                     wire:click="filtrarDetalleUbicacion({{ $row['articulo_id'] }}, '{{ $b['value'] }}')"
                                                     type="button"
@@ -154,7 +155,27 @@
                                                         'success' => 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
                                                         'warning' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
                                                         'danger'  => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
-                                                        default   => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                                                        'gray'    => 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-slate-100',
+                                                        default   => 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-slate-100'
+                                                    } }}">
+                                                    {{ $b['label'] }}: {{ $b['qty'] }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach($row['disponibilidad_breakdown'] as $b)
+                                                <button
+                                                    wire:click="filtrarDisponibilidadUbicacion({{ $row['articulo_id'] }}, '{{ $b['value'] }}')"
+                                                    type="button"
+                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition hover:opacity-80
+                                                    {{ match($b['color']) {
+                                                        'success' => 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+                                                        'warning' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
+                                                        'danger'  => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+                                                        'gray'    => 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-slate-100',
+                                                        default   => 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-slate-100'
                                                     } }}">
                                                     {{ $b['label'] }}: {{ $b['qty'] }}
                                                 </button>
@@ -165,7 +186,7 @@
                             @endforeach
                             @if(count($this->itemsPorUbicacion) === 0)
                                 <tr>
-                                    <td colspan="3" class="px-6 py-12 text-center text-gray-500">No hay items en esta ubicación.</td>
+                                    <td colspan="4" class="px-6 py-12 text-center text-gray-500">No hay items en esta ubicación.</td>
                                 </tr>
                             @endif
                         </tbody>
@@ -180,14 +201,20 @@
                 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalle de Items</h3>
-                        @if($this->detalleArticuloSeleccionado && $this->detalleEstadoSeleccionadoLabel)
+                        @if($this->detalleArticuloSeleccionado && ($this->detalleEstadoSeleccionadoLabel || $this->detalleDisponibilidadSeleccionadaLabel))
                             <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">
-                                Filtro activo: <strong>{{ $this->detalleArticuloSeleccionado->nombre }}</strong> + <strong>{{ $this->detalleEstadoSeleccionadoLabel }}</strong>
+                                Filtro activo: <strong>{{ $this->detalleArticuloSeleccionado->nombre }}</strong>
+                                @if($this->detalleEstadoSeleccionadoLabel)
+                                    + Estado <strong>{{ $this->detalleEstadoSeleccionadoLabel }}</strong>
+                                @endif
+                                @if($this->detalleDisponibilidadSeleccionadaLabel)
+                                    + Disponibilidad <strong>{{ $this->detalleDisponibilidadSeleccionadaLabel }}</strong>
+                                @endif
                             </p>
                         @endif
                     </div>
                     <div class="flex items-center gap-2">
-                        @if($this->detalleArticuloSeleccionado && $this->detalleEstadoSeleccionadoLabel)
+                        @if($this->detalleArticuloSeleccionado || $this->detalleEstadoSeleccionadoLabel || ($this->detalleDisponibilidad && $this->detalleDisponibilidad !== 'en_uso'))
                             <button
                                 wire:click="limpiarFiltroDetalleUbicacion"
                                 type="button"
@@ -197,7 +224,7 @@
                             </button>
                         @endif
                         <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full dark:bg-blue-900/30 dark:text-blue-300">
-                            Solo ítems "En Uso"
+                            Disponibilidad: {{ $this->detalleDisponibilidadSeleccionadaLabel ?? 'Todas' }}
                         </span>
                     </div>
                 </div>
@@ -238,6 +265,14 @@
                         </div>
                     </div>
                     <div class="ml-auto flex items-center gap-3">
+                        <a href="{{ $this->createItemUrlResponsable }}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                            + Nuevo ítem
+                        </a>
+                        <a href="{{ $this->batchItemsUrlResponsable }}"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors">
+                            + Agregar lote
+                        </a>
                         <a href="{{ route('reportes.pdf.responsable', $this->responsableFilterId, false) }}" 
                            target="_blank"
                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
@@ -277,6 +312,7 @@
                                 <th class="px-6 py-3 font-medium">Artículo</th>
                                 <th class="px-6 py-3 font-medium text-right">Cantidad</th>
                                 <th class="px-6 py-3 font-medium">Estado</th>
+                                <th class="px-6 py-3 font-medium">Disponibilidad</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -297,7 +333,7 @@
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-wrap gap-1">
-                                            @foreach($row['breakdown'] as $b)
+                                            @foreach($row['estado_breakdown'] as $b)
                                                 <button
                                                     wire:click="filtrarDetalleResponsable({{ $row['articulo_id'] }}, {{ $row['ubicacion_id'] }}, '{{ $b['value'] }}')"
                                                     type="button"
@@ -306,7 +342,27 @@
                                                         'success' => 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
                                                         'warning' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
                                                         'danger'  => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
-                                                        default   => 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                                                        'gray'    => 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-slate-100',
+                                                        default   => 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-slate-100'
+                                                    } }}">
+                                                    {{ $b['label'] }}: {{ $b['qty'] }}
+                                                </button>
+                                            @endforeach
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach($row['disponibilidad_breakdown'] as $b)
+                                                <button
+                                                    wire:click="filtrarDisponibilidadResponsable({{ $row['articulo_id'] }}, {{ $row['ubicacion_id'] }}, '{{ $b['value'] }}')"
+                                                    type="button"
+                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium transition hover:opacity-80
+                                                    {{ match($b['color']) {
+                                                        'success' => 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+                                                        'warning' => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
+                                                        'danger'  => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+                                                        'gray'    => 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-slate-100',
+                                                        default   => 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-slate-100'
                                                     } }}">
                                                     {{ $b['label'] }}: {{ $b['qty'] }}
                                                 </button>
@@ -317,7 +373,7 @@
                             @endforeach
                             @if(count($this->itemsPorResponsable) === 0)
                                 <tr>
-                                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">Este responsable no tiene items asignados.</td>
+                                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">Este responsable no tiene items asignados.</td>
                                 </tr>
                             @endif
                         </tbody>
@@ -326,20 +382,25 @@
 
                 <div class="mt-8">
                     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalle de Items Asignados</h3>
-                            @if($this->detalleResponsableArticuloSeleccionado && $this->detalleResponsableEstadoSeleccionadoLabel)
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalle de Items Asignados</h3>
+                            @if($this->detalleResponsableArticuloSeleccionado && ($this->detalleResponsableEstadoSeleccionadoLabel || $this->detalleResponsableDisponibilidadSeleccionadaLabel))
                                 <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">
                                     Filtro activo: <strong>{{ $this->detalleResponsableArticuloSeleccionado->nombre }}</strong>
                                     @if($this->detalleResponsableUbicacionSeleccionada)
                                         en <strong>{{ $this->detalleResponsableUbicacionSeleccionada->codigo }}</strong>
                                     @endif
-                                    + <strong>{{ $this->detalleResponsableEstadoSeleccionadoLabel }}</strong>
+                                    @if($this->detalleResponsableEstadoSeleccionadoLabel)
+                                        + Estado <strong>{{ $this->detalleResponsableEstadoSeleccionadoLabel }}</strong>
+                                    @endif
+                                    @if($this->detalleResponsableDisponibilidadSeleccionadaLabel)
+                                        + Disponibilidad <strong>{{ $this->detalleResponsableDisponibilidadSeleccionadaLabel }}</strong>
+                                    @endif
                                 </p>
                             @endif
                         </div>
                         <div class="flex items-center gap-2">
-                            @if($this->detalleResponsableArticuloSeleccionado && $this->detalleResponsableEstadoSeleccionadoLabel)
+                            @if($this->detalleResponsableArticuloSeleccionado || $this->detalleResponsableEstadoSeleccionadoLabel || ($this->detalleResponsableDisponibilidad && $this->detalleResponsableDisponibilidad !== 'en_uso'))
                                 <button
                                     wire:click="limpiarFiltroDetalleResponsable"
                                     type="button"
@@ -349,7 +410,7 @@
                                 </button>
                             @endif
                             <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full dark:bg-blue-900/30 dark:text-blue-300">
-                                Solo ítems "En Uso"
+                                Disponibilidad: {{ $this->detalleResponsableDisponibilidadSeleccionadaLabel ?? 'Todas' }}
                             </span>
                         </div>
                     </div>
@@ -366,14 +427,12 @@
         <div class="space-y-6">
             {{-- Filters --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-xl shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
-                 
-                 {{-- Info Note: Only En Uso items --}}
                  <div class="space-y-1">
                      <label class="text-sm font-medium text-gray-700 dark:text-gray-200 flex items-center gap-2">
                         <x-heroicon-o-information-circle class="w-4 h-4 text-blue-500" /> Nota
                      </label>
                      <div class="px-3 py-2 bg-blue-50 text-blue-700 text-sm rounded-lg dark:bg-blue-900/30 dark:text-blue-300">
-                         Solo se muestran ítems con disponibilidad <strong>"En Uso"</strong>.
+                         Haz clic en chips de <strong>Estado</strong> o <strong>Disponibilidad</strong> para abrir el detalle filtrado.
                      </div>
                  </div>
 
@@ -429,12 +488,34 @@
                                                                 'success' => 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
                                                                 'warning' => 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
                                                                 'danger'  => 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                                                                default   => 'bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                                                                'gray'    => 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-slate-100',
+                                                                default   => 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-slate-100'
                                                             } }}">
                                                             <span class="font-medium">{{ $b['label'] }}</span>
                                                             <span class="font-bold border-l border-current pl-1.5 ml-1.5 opacity-75">{{ $b['qty'] }}</span>
                                                         </button>
                                                     @endforeach
+                                                </div>
+
+                                                <div class="w-full border-t border-gray-100 pt-1 dark:border-gray-800">
+                                                    <div class="w-full space-y-1">
+                                                        @foreach($cell['disponibilidad_breakdown'] as $b)
+                                                            <button
+                                                                wire:click="filtrarDisponibilidadConsolidado({{ $row['id'] }}, {{ $sede->id }}, '{{ $b['value'] }}')"
+                                                                type="button"
+                                                                class="w-full flex items-center justify-between px-2 py-1 rounded text-xs transition hover:opacity-80
+                                                                {{ match($b['color']) {
+                                                                    'success' => 'bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                                                                    'warning' => 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                                                                    'danger'  => 'bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                                                                    'gray'    => 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-slate-100',
+                                                                    default   => 'bg-slate-200 text-slate-900 dark:bg-slate-600 dark:text-slate-100'
+                                                                } }}">
+                                                                <span class="font-medium">{{ $b['label'] }}</span>
+                                                                <span class="font-bold border-l border-current pl-1.5 ml-1.5 opacity-75">{{ $b['qty'] }}</span>
+                                                            </button>
+                                                        @endforeach
+                                                    </div>
                                                 </div>
                                             </div>
                                         @else
@@ -455,18 +536,23 @@
                 <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Detalle de Items (Consolidado)</h3>
-                        @if($this->detalleConsolidadoArticuloSeleccionado && $this->detalleConsolidadoEstadoSeleccionadoLabel)
+                        @if($this->detalleConsolidadoArticuloSeleccionado && ($this->detalleConsolidadoEstadoSeleccionadoLabel || $this->detalleConsolidadoDisponibilidadSeleccionadaLabel))
                             <p class="text-xs text-gray-600 dark:text-gray-300 mt-1">
                                 Filtro activo: <strong>{{ $this->detalleConsolidadoArticuloSeleccionado->nombre }}</strong>
                                 @if($this->detalleConsolidadoSedeSeleccionada)
                                     en <strong>{{ $this->detalleConsolidadoSedeSeleccionada->nombre }}</strong>
                                 @endif
-                                + <strong>{{ $this->detalleConsolidadoEstadoSeleccionadoLabel }}</strong>
+                                @if($this->detalleConsolidadoEstadoSeleccionadoLabel)
+                                    + Estado <strong>{{ $this->detalleConsolidadoEstadoSeleccionadoLabel }}</strong>
+                                @endif
+                                @if($this->detalleConsolidadoDisponibilidadSeleccionadaLabel)
+                                    + Disponibilidad <strong>{{ $this->detalleConsolidadoDisponibilidadSeleccionadaLabel }}</strong>
+                                @endif
                             </p>
                         @endif
                     </div>
                     <div class="flex items-center gap-2">
-                        @if($this->detalleConsolidadoArticuloSeleccionado && $this->detalleConsolidadoEstadoSeleccionadoLabel)
+                        @if($this->detalleConsolidadoArticuloSeleccionado || $this->detalleConsolidadoEstadoSeleccionadoLabel || ($this->detalleConsolidadoDisponibilidad && $this->detalleConsolidadoDisponibilidad !== 'en_uso'))
                             <button
                                 wire:click="limpiarFiltroDetalleConsolidado"
                                 type="button"
@@ -476,7 +562,7 @@
                             </button>
                         @endif
                         <span class="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full dark:bg-blue-900/30 dark:text-blue-300">
-                            Solo ítems "En Uso"
+                            Disponibilidad: {{ $this->detalleConsolidadoDisponibilidadSeleccionadaLabel ?? 'Todas' }}
                         </span>
                     </div>
                 </div>
