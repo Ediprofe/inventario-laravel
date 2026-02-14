@@ -23,6 +23,13 @@ class ReportesPdfController extends Controller
         $this->reportService = $reportService;
     }
 
+    protected function buildApprovalUrl(string $token): string
+    {
+        $baseUrl = rtrim((string) config('app.public_url', config('app.url')), '/');
+
+        return $baseUrl . "/inventario/aprobar/{$token}";
+    }
+
     /**
      * Generate PDF for inventory by location (summary only, no detail)
      */
@@ -92,7 +99,7 @@ class ReportesPdfController extends Controller
             'token' => EnvioInventario::generarToken(),
         ]);
         
-        $urlAprobacion = url("/inventario/aprobar/{$envio->token}");
+        $urlAprobacion = $this->buildApprovalUrl($envio->token);
         
         // Ensure temp directory exists in local disk
         $localDisk = Storage::disk('local');
@@ -177,7 +184,7 @@ class ReportesPdfController extends Controller
             'token' => EnvioInventario::generarToken(),
         ]);
         
-        $urlAprobacion = url("/inventario/aprobar/{$envio->token}");
+        $urlAprobacion = $this->buildApprovalUrl($envio->token);
         
         // Ensure temp directory exists in local disk
         $localDisk = Storage::disk('local');

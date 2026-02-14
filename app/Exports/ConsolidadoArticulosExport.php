@@ -18,7 +18,7 @@ class ConsolidadoArticulosExport implements FromArray, WithHeadings, WithStyles,
 
     public function title(): string
     {
-        return 'Consolidado Artículos';
+        return 'Por Artículo';
     }
 
     public function headings(): array
