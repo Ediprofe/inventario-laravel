@@ -153,6 +153,14 @@ class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, WithC
                 'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF1E40AF']],
             ],
         ]);
+        $sheet->getStyle('E9')->applyFromArray([
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF15803D']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF14532D']]],
+        ]);
+        $sheet->getStyle('F9:H9')->applyFromArray([
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFB91C1C']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF7F1D1D']]],
+        ]);
 
         if ($highestRow >= 10) {
             $sheet->getStyle("A10:H{$highestRow}")->applyFromArray([

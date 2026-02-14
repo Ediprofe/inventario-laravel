@@ -2,7 +2,6 @@
 
 namespace App\Exports\Ubicacion;
 
-use App\Models\Ubicacion;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class UbicacionIndividualExport implements WithMultipleSheets
@@ -17,7 +16,7 @@ class UbicacionIndividualExport implements WithMultipleSheets
     public function sheets(): array
     {
         return [
-            new ResumenUbicacionSheet($this->ubicacionId, 'Resumen Ejecutivo'),
+            new ResumenUbicacionSheet($this->ubicacionId, 'Resumen'),
             new DetalleUbicacionSheet($this->ubicacionId, 'Detalle En Uso', true),
             new DetalleUbicacionSheet($this->ubicacionId, 'Detalle No En Uso', false),
         ];

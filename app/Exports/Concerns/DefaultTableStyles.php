@@ -35,6 +35,9 @@ trait DefaultTableStyles
         $sheet->setShowGridlines(false);
         $sheet->getRowDimension(1)->setRowHeight(28);
 
+        $headerFillColor = $this->getTableHeaderFillColor();
+        $headerBorderColor = $this->getTableHeaderBorderColor();
+
         // Header: Strong blue background with white bold text
         $headerStyle = [
             'font' => [
@@ -48,16 +51,16 @@ trait DefaultTableStyles
             ],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['argb' => 'FF0F4BCF'],
+                'startColor' => ['argb' => $headerFillColor],
             ],
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
-                    'color' => ['argb' => 'FF0A2A74'],
+                    'color' => ['argb' => $headerBorderColor],
                 ],
                 'bottom' => [
                     'borderStyle' => Border::BORDER_MEDIUM,
-                    'color' => ['argb' => 'FF0A2A74'],
+                    'color' => ['argb' => $headerBorderColor],
                 ],
             ],
         ];
@@ -104,5 +107,15 @@ trait DefaultTableStyles
 
         $sheet->setSelectedCell('A1');
 
+    }
+
+    protected function getTableHeaderFillColor(): string
+    {
+        return 'FF0F4BCF';
+    }
+
+    protected function getTableHeaderBorderColor(): string
+    {
+        return 'FF0A2A74';
     }
 }

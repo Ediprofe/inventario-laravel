@@ -82,6 +82,36 @@
                     </div>
                 </div>
 
+                <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-950/5 p-5 dark:bg-gray-900 dark:ring-white/10">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-3">
+                        <div>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-white">Observaciones de la ubicación</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Edición rápida para el barrido en sitio.</p>
+                        </div>
+                        <a href="/admin/ubicacions/{{ $this->currentUbicacion->id }}/edit"
+                           target="_blank"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300">
+                            Abrir edición completa
+                        </a>
+                    </div>
+                    <textarea
+                        wire:model.defer="ubicacionObservaciones"
+                        rows="3"
+                        class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 dark:bg-gray-800 dark:border-gray-600"
+                        placeholder="Escriba aquí observaciones de esta ubicación..."
+                    ></textarea>
+                    <div class="mt-3 flex justify-end">
+                        <button
+                            wire:click="saveUbicacionObservaciones"
+                            type="button"
+                            class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+                        >
+                            <span wire:loading.remove wire:target="saveUbicacionObservaciones">Guardar observaciones</span>
+                            <span wire:loading wire:target="saveUbicacionObservaciones">Guardando...</span>
+                        </button>
+                    </div>
+                </div>
+
                 {{-- Inventory Table --}}
                 <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-950/5 overflow-hidden dark:bg-gray-900 dark:ring-white/10">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center dark:border-gray-800">

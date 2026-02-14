@@ -172,6 +172,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
     public ?int $detalleArticuloId = null;
     public ?string $detalleEstado = null;
     public ?string $detalleDisponibilidad = Disponibilidad::EN_USO->value;
+    public ?string $ubicacionObservaciones = null;
 
     // Quick filters - Detalle por responsable
     public ?int $detalleResponsableArticuloId = null;
@@ -229,6 +230,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
         }
 
         $this->persistUbicacionFilters();
+        $this->syncUbicacionObservacionesDraft();
     }
 
     protected function restoreResponsableFilter(): void
@@ -261,6 +263,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
         $this->limpiarFiltroDetalleUbicacion(true);
         $this->persistUbicacionFilters();
+        $this->syncUbicacionObservacionesDraft();
     }
 
     public function updatedUbicacionId($value): void
@@ -268,6 +271,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
         $this->ubicacionId = $value ? (int) $value : null;
         $this->limpiarFiltroDetalleUbicacion(true);
         $this->persistUbicacionFilters();
+        $this->syncUbicacionObservacionesDraft();
     }
 
     public function updatedResponsableFilterId($value): void
@@ -335,6 +339,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
         $this->ubicacionId = $ubicaciones->get($index - 1);
         $this->persistUbicacionFilters();
+        $this->syncUbicacionObservacionesDraft();
     }
 
     public function goToNextUbicacion(): void
@@ -348,6 +353,60 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
         $this->ubicacionId = $ubicaciones->get($index + 1);
         $this->persistUbicacionFilters();
+        $this->syncUbicacionObservacionesDraft();
+    }
+
+    protected function syncUbicacionObservacionesDraft(): void
+    {
+        if (!$this->ubicacionId) {
+            $this->ubicacionObservaciones = null;
+
+            return;
+        }
+
+        $this->ubicacionObservaciones = Ubicacion::query()
+            ->whereKey($this->ubicacionId)
+            ->value('observaciones');
+    }
+
+    public function saveUbicacionObservaciones(): void
+    {
+        if (!$this->ubicacionId) {
+            Notification::make()
+                ->title('Seleccione una ubicación')
+                ->warning()
+                ->send();
+
+            return;
+        }
+
+        $this->validate([
+            'ubicacionObservaciones' => ['nullable', 'string', 'max:5000'],
+        ]);
+
+        $ubicacion = Ubicacion::find($this->ubicacionId);
+
+        if (!$ubicacion) {
+            Notification::make()
+                ->title('Ubicación no encontrada')
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $ubicacion->update([
+            'observaciones' => filled($this->ubicacionObservaciones)
+                ? trim((string) $this->ubicacionObservaciones)
+                : null,
+        ]);
+
+        $this->syncUbicacionObservacionesDraft();
+
+        Notification::make()
+            ->title('Observaciones guardadas')
+            ->success()
+            ->send();
     }
 
     public function getResponsablesProperty()

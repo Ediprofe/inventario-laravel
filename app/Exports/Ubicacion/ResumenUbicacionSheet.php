@@ -146,6 +146,14 @@ class ResumenUbicacionSheet implements FromArray, WithTitle, WithStyles, WithCol
                 'allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF1E40AF']],
             ],
         ]);
+        $sheet->getStyle('C9')->applyFromArray([
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF15803D']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF14532D']]],
+        ]);
+        $sheet->getStyle('D9:F9')->applyFromArray([
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFB91C1C']],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF7F1D1D']]],
+        ]);
 
         if ($highestRow >= 10) {
             $sheet->getStyle("A10:F{$highestRow}")->applyFromArray([

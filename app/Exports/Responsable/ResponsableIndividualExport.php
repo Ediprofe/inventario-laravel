@@ -16,7 +16,7 @@ class ResponsableIndividualExport implements WithMultipleSheets
     public function sheets(): array
     {
         return [
-            new ResumenResponsableSheet($this->responsableId, 'Resumen Ejecutivo'),
+            new ResumenResponsableSheet($this->responsableId, 'Resumen'),
             new DetalleResponsableSheet($this->responsableId, 'Detalle En Uso', true),
             new DetalleResponsableSheet($this->responsableId, 'Detalle No En Uso', false),
         ];

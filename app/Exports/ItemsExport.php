@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Exports\Concerns\DefaultTableStyles;
 use App\Models\Item;
+use BackedEnum;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
@@ -25,17 +26,29 @@ class ItemsExport implements FromQuery, ShouldAutoSize, WithColumnWidths, WithHe
     }
 
     protected $filters;
+    protected string $sheetTitle;
 
-    public function __construct(array $filters = [])
+    public function __construct(array $filters = [], string $sheetTitle = 'Items')
     {
         $this->filters = $filters;
+        $this->sheetTitle = $sheetTitle;
     }
 
     public function query()
     {
-        return Item::query()
+        $query = Item::query()
             ->with(['sede', 'ubicacion', 'articulo', 'responsable'])
             ->orderBy('updated_at', 'desc');
+
+        if (array_key_exists('disponibilidad', $this->filters)) {
+            $query->where('disponibilidad', $this->normalizeFilterValue($this->filters['disponibilidad']));
+        }
+
+        if (array_key_exists('disponibilidad_not', $this->filters)) {
+            $query->where('disponibilidad', '!=', $this->normalizeFilterValue($this->filters['disponibilidad_not']));
+        }
+
+        return $query;
     }
 
     public function headings(): array
@@ -74,6 +87,25 @@ class ItemsExport implements FromQuery, ShouldAutoSize, WithColumnWidths, WithHe
 
     public function title(): string
     {
-        return 'Items';
+        return $this->sheetTitle;
+    }
+
+    protected function getTableHeaderFillColor(): string
+    {
+        return array_key_exists('disponibilidad_not', $this->filters)
+            ? 'FFB91C1C'
+            : 'FF0F4BCF';
+    }
+
+    protected function getTableHeaderBorderColor(): string
+    {
+        return array_key_exists('disponibilidad_not', $this->filters)
+            ? 'FF7F1D1D'
+            : 'FF0A2A74';
+    }
+
+    protected function normalizeFilterValue(mixed $value): mixed
+    {
+        return $value instanceof BackedEnum ? $value->value : $value;
     }
 }

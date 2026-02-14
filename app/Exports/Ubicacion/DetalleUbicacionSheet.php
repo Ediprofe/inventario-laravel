@@ -86,8 +86,8 @@ class DetalleUbicacionSheet implements FromArray, WithTitle, WithStyles, WithHea
         $highestRow = $sheet->getHighestRow();
         $highestColumn = 'I';
 
-        $headerColor = $this->onlyEnUso ? 'FF1D4ED8' : 'FF9A3412';
-        $headerBorderColor = $this->onlyEnUso ? 'FF1E3A8A' : 'FF7C2D12';
+        $headerColor = $this->onlyEnUso ? 'FF15803D' : 'FFB91C1C';
+        $headerBorderColor = $this->onlyEnUso ? 'FF14532D' : 'FF7F1D1D';
 
         $sheet->setShowGridlines(false);
         $sheet->getRowDimension(1)->setRowHeight(28);
