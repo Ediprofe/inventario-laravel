@@ -46,6 +46,18 @@ class ResponsableResource extends Resource
                 Forms\Components\Toggle::make('activo')
                     ->required()
                     ->default(true),
+                Forms\Components\Toggle::make('es_firmante_entrega')
+                    ->label('Firmante de entrega por defecto')
+                    ->helperText('Si activa esta opción, este responsable quedará como firmante de entrega/verificación en los reportes.')
+                    ->default(false),
+                Forms\Components\FileUpload::make('firma_entrega_path')
+                    ->label('Firma (imagen) para entrega/verificación')
+                    ->disk('public')
+                    ->directory('firmas-entrega')
+                    ->visibility('public')
+                    ->image()
+                    ->imageEditor()
+                    ->helperText('Se usará en correo y PDF como firma de quien entrega/verifica.'),
             ]);
     }
 
@@ -64,6 +76,9 @@ class ResponsableResource extends Resource
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\IconColumn::make('activo')
+                    ->boolean(),
+                Tables\Columns\IconColumn::make('es_firmante_entrega')
+                    ->label('Firma entrega')
                     ->boolean(),
                 Tables\Columns\TextColumn::make('items_count')
                     ->counts('items')

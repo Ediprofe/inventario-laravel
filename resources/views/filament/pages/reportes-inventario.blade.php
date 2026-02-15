@@ -144,12 +144,12 @@
                                 </svg>
                                 Excel
                             </a>
-                            <button onclick="enviarInventario('{{ route('reportes.pdf.ubicacion.enviar', $this->ubicacionId, false) }}', this)"
+                            <button onclick="generarEnlaceFirma('{{ route('reportes.pdf.ubicacion.enviar', $this->ubicacionId, false) }}', this)"
                                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
-                                Enviar
+                                Generar link firma
                             </button>
                             <span class="px-3 py-1 bg-blue-100 text-blue-700 font-bold rounded-full text-sm dark:bg-blue-900 dark:text-blue-300">
                                 {{ $this->totalItemsUbicacion }} Items
@@ -319,12 +319,12 @@
                             </svg>
                             Excel
                         </a>
-                        <button onclick="enviarInventario('{{ route('reportes.pdf.responsable.enviar', $this->responsableFilterId, false) }}', this)"
+                        <button onclick="generarEnlaceFirma('{{ route('reportes.pdf.responsable.enviar', $this->responsableFilterId, false) }}', this)"
                            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
-                            Enviar
+                            Generar link firma
                         </button>
                         <span class="px-4 py-2 bg-purple-100 text-purple-700 font-bold rounded-full dark:bg-purple-900 dark:text-purple-300">
                             {{ $this->totalItemsResponsable }} Items Total
@@ -603,12 +603,14 @@
     @endif
 
     <script>
-        async function enviarInventario(url, btn) {
-            if (!confirm('¿Enviar el reporte de inventario por correo?')) return;
+        const APP_PUBLIC_URL = @js(rtrim((string) config('app.public_url', ''), '/'));
+
+        async function generarEnlaceFirma(url, btn) {
+            if (!confirm('¿Generar enlace para firma en tablet/celular?')) return;
             
             const originalText = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Enviando...`;
+            btn.innerHTML = `<svg class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Generando...`;
             
             try {
                 const response = await fetch(url, {
@@ -632,7 +634,29 @@
                 if (data.success) {
                     btn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                     btn.classList.add('bg-green-600');
-                    btn.innerHTML = `✅ Enviado`;
+                    btn.innerHTML = `✅ Link listo`;
+
+                    const firmaRuta = data.ruta_firma || '';
+                    const firmaUrl = data.url_firma || (firmaRuta && APP_PUBLIC_URL ? `${APP_PUBLIC_URL}${firmaRuta}` : '');
+                    const token = data.token || '';
+                    const codigo = data.codigo_envio || '';
+                    let copied = false;
+
+                    if (firmaUrl && navigator.clipboard) {
+                        try {
+                            await navigator.clipboard.writeText(firmaUrl);
+                            copied = true;
+                        } catch (_) {
+                            copied = false;
+                        }
+                    }
+
+                    if (copied) {
+                        alert(`Enlace de firma copiado.\n\n${firmaUrl}\n\nCódigo: ${codigo}`);
+                    } else {
+                        prompt('Copie este enlace y péguelo en la tablet/celular:', firmaUrl || token);
+                    }
+
                     setTimeout(() => {
                         btn.classList.remove('bg-green-600');
                         btn.classList.add('bg-blue-600', 'hover:bg-blue-700');
@@ -645,7 +669,7 @@
                     btn.disabled = false;
                 }
             } catch (error) {
-                alert('Error al enviar el correo: ' + (error.message || 'Intente de nuevo.'));
+                alert('Error al generar el enlace: ' + (error.message || 'Intente de nuevo.'));
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }

@@ -18,11 +18,22 @@ class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, WithC
 {
     protected int $responsableId;
     protected string $title;
+    /** @var array<string,string> */
+    protected array $meta;
+    protected int $tableDataStartRow = 10;
+    protected int $tableDataEndRow = 10;
+    protected int $observacionesTitleRow = 0;
+    protected int $observacionesBodyRow = 0;
+    protected string $observacionesText = '';
 
-    public function __construct(int $responsableId, string $title)
+    /**
+     * @param array<string,string> $meta
+     */
+    public function __construct(int $responsableId, string $title, array $meta = [])
     {
         $this->responsableId = $responsableId;
         $this->title = $title;
+        $this->meta = $meta;
     }
 
     public function title(): string
@@ -50,20 +61,37 @@ class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, WithC
         $rows[] = [sprintf('RESPONSABLE: %s', $responsable?->nombre_completo ?? '-')];
         $rows[] = [
             sprintf(
-                'Cargo: %s | Email: %s | Generado: %s',
+                'Cargo: %s | Email: %s | Generado: %s%s%s%s',
                 $responsable?->cargo ?? '-',
                 $responsable?->email ?? '-',
-                now()->format('Y-m-d H:i')
+                now()->format('Y-m-d H:i'),
+                !empty($this->meta['codigo_envio']) ? ' | Envío: ' : '',
+                $this->meta['codigo_envio'] ?? '',
+                !empty($this->meta['firmante_responsable']) ? ' | Firma: ' . $this->meta['firmante_responsable'] : ''
             ),
         ];
         $rows[] = [''];
 
-        $rows[] = ['Total Ítems', '', '', 'En Uso', '', '', 'Fuera de Uso', ''];
-        $rows[] = [$total, '', '', $enUso, '', '', $fueraUso, ''];
+        $observaciones = $items->pluck('ubicacion')
+            ->filter()
+            ->unique('id')
+            ->filter(fn ($ubicacion) => filled($ubicacion->observaciones))
+            ->map(fn ($ubicacion) => sprintf(
+                "- %s - %s:\n%s",
+                $ubicacion->codigo ?? '-',
+                $ubicacion->nombre ?? 'Ubicación',
+                trim((string) $ubicacion->observaciones)
+            ))
+            ->implode("\n\n");
+
+        $this->observacionesText = $observaciones !== '' ? $observaciones : 'Sin observaciones registradas.';
+
+        $rows[] = ['Total Ítems', '', '', 'En Uso', '', '', 'Fuera de Uso', '']; // row 5
+        $rows[] = [$total, '', '', $enUso, '', '', $fueraUso, '']; // row 6
         $rows[] = [''];
 
-        $rows[] = ['Distribución por Ubicación y Artículo (Disponibilidad)'];
-        $rows[] = ['Cód. Ubicación', 'Ubicación', 'Artículo', 'Cant. Total', 'En Uso', 'En Reparación', 'Extraviado', 'De Baja'];
+        $rows[] = ['Distribución por Ubicación, Artículo y Disponibilidad']; // row 8
+        $rows[] = ['Cód. Ubicación', 'Ubicación', 'Artículo', 'Cant. Total', 'En Uso', 'En Reparación', 'Extraviado', 'De Baja']; // row 9
 
         $grouped = $items
             ->groupBy(fn ($item) => $item->ubicacion_id . '_' . $item->articulo_id)
@@ -90,13 +118,18 @@ class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, WithC
             $rows[] = ['Sin registros', '', '', 0, 0, 0, 0, 0];
         }
 
+        $this->tableDataEndRow = count($rows);
+        $rows[] = [''];
+        $this->observacionesTitleRow = count($rows) + 1;
+        $rows[] = ['Observaciones de ubicaciones'];
+        $this->observacionesBodyRow = count($rows) + 1;
+        $rows[] = [$this->observacionesText];
+
         return $rows;
     }
 
     public function styles(Worksheet $sheet): array
     {
-        $highestRow = $sheet->getHighestRow();
-
         $sheet->setShowGridlines(false);
 
         $sheet->mergeCells('A1:H1');
@@ -162,8 +195,8 @@ class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, WithC
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF7F1D1D']]],
         ]);
 
-        if ($highestRow >= 10) {
-            $sheet->getStyle("A10:H{$highestRow}")->applyFromArray([
+        if ($this->tableDataEndRow >= $this->tableDataStartRow) {
+            $sheet->getStyle("A{$this->tableDataStartRow}:H{$this->tableDataEndRow}")->applyFromArray([
                 'font' => ['size' => 11, 'color' => ['argb' => 'FF0F172A']],
                 'alignment' => ['vertical' => Alignment::VERTICAL_CENTER],
                 'borders' => [
@@ -171,11 +204,11 @@ class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, WithC
                 ],
             ]);
 
-            $sheet->getStyle("D10:H{$highestRow}")
+            $sheet->getStyle("D{$this->tableDataStartRow}:H{$this->tableDataEndRow}")
                 ->getAlignment()
                 ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-            for ($row = 10; $row <= $highestRow; $row++) {
+            for ($row = $this->tableDataStartRow; $row <= $this->tableDataEndRow; $row++) {
                 if ($row % 2 === 0) {
                     $sheet->getStyle("A{$row}:H{$row}")
                         ->getFill()
@@ -184,6 +217,36 @@ class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, WithC
                         ->setARGB('FFF8FAFF');
                 }
             }
+        }
+
+        if ($this->observacionesTitleRow > 0 && $this->observacionesBodyRow > 0) {
+            $sheet->mergeCells("A{$this->observacionesTitleRow}:H{$this->observacionesTitleRow}");
+            $sheet->mergeCells("A{$this->observacionesBodyRow}:H{$this->observacionesBodyRow}");
+
+            $sheet->getStyle("A{$this->observacionesTitleRow}:H{$this->observacionesTitleRow}")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 11, 'color' => ['argb' => 'FF1E3A8A']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFEFF6FF']],
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_LEFT, 'vertical' => Alignment::VERTICAL_CENTER],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFBFDBFE']]],
+            ]);
+
+            $sheet->getStyle("A{$this->observacionesBodyRow}:H{$this->observacionesBodyRow}")->applyFromArray([
+                'font' => ['size' => 10, 'color' => ['argb' => 'FF0F172A']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FFF8FAFC']],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_LEFT,
+                    'vertical' => Alignment::VERTICAL_TOP,
+                    'wrapText' => true,
+                ],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFCBD5E1']]],
+            ]);
+
+            $estimatedLines = max(
+                3,
+                substr_count($this->observacionesText, "\n") + 1,
+                (int) ceil(mb_strlen($this->observacionesText) / 140)
+            );
+            $sheet->getRowDimension($this->observacionesBodyRow)->setRowHeight($estimatedLines * 16);
         }
 
         // No AutoFilter in executive sheet to keep it visually clean.

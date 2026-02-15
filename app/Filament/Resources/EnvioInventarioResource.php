@@ -53,6 +53,11 @@ class EnvioInventarioResource extends Resource
                     ->label('Email')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('firmante_nombre')
+                    ->label('Firmante')
+                    ->placeholder('—')
+                    ->searchable()
+                    ->toggleable(),
                 Tables\Columns\TextColumn::make('enviado_at')
                     ->label('Enviado')
                     ->since()
@@ -62,8 +67,8 @@ class EnvioInventarioResource extends Resource
                     ->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-clock')
                     ->color(fn ($state) => $state ? 'success' : 'warning')
                     ->tooltip(fn ($record) => $record->estaAprobado()
-                        ? 'Aprobado el ' . $record->aprobado_at->format('d/m/Y H:i')
-                        : 'Pendiente de aprobación'),
+                        ? 'Firmado el ' . $record->aprobado_at->format('d/m/Y H:i')
+                        : 'Pendiente de firma'),
                 Tables\Columns\TextColumn::make('aprobado_at')
                     ->label('Aprobado')
                     ->since()
@@ -80,8 +85,8 @@ class EnvioInventarioResource extends Resource
             ->filters([
                 Tables\Filters\SelectFilter::make('estado')
                     ->options([
-                        'pendiente' => '⏳ Pendiente',
-                        'aprobado' => '✅ Aprobado',
+                        'pendiente' => '⏳ Pendiente de firma',
+                        'aprobado' => '✅ Firmado',
                     ])
                     ->query(function ($query, array $data) {
                         return match ($data['value']) {
@@ -102,7 +107,7 @@ class EnvioInventarioResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('ver_aprobacion')
-                    ->label('Ver enlace')
+                    ->label('Ver enlace de firma')
                     ->icon('heroicon-o-link')
                     ->url(fn (EnvioInventario $record) => url("/inventario/aprobar/{$record->token}"))
                     ->openUrlInNewTab(),

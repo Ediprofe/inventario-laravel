@@ -10,6 +10,10 @@ class EnvioInventario extends Model
 {
     protected $table = 'envios_inventario';
 
+    protected $appends = [
+        'codigo_envio',
+    ];
+
     protected $fillable = [
         'responsable_id',
         'tipo',
@@ -19,6 +23,8 @@ class EnvioInventario extends Model
         'token',
         'aprobado_at',
         'ip_aprobacion',
+        'firmante_nombre',
+        'firma_base64',
         'observaciones',
     ];
 
@@ -50,5 +56,10 @@ class EnvioInventario extends Model
     public static function generarToken(): string
     {
         return Str::uuid()->toString();
+    }
+
+    public function getCodigoEnvioAttribute(): string
+    {
+        return 'ENV-' . str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

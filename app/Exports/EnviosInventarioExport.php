@@ -19,7 +19,7 @@ class EnviosInventarioExport implements FromQuery, WithHeadings, WithMapping, Wi
     public function columnWidths(): array
     {
         return [
-            'I' => 50, // Observaciones
+            'K' => 50, // Observaciones
         ];
     }
 
@@ -37,10 +37,12 @@ class EnviosInventarioExport implements FromQuery, WithHeadings, WithMapping, Wi
             'Tipo',
             'Ubicación',
             'Email Enviado A',
+            'Firmante',
             'Fecha Envío',
             'Estado',
-            'Fecha Aprobación',
-            'IP Aprobación',
+            'Fecha Firma',
+            'IP Firma',
+            'Firma Registrada',
             'Observaciones',
         ];
     }
@@ -52,10 +54,12 @@ class EnviosInventarioExport implements FromQuery, WithHeadings, WithMapping, Wi
             $envio->tipo === 'por_ubicacion' ? 'Por Ubicación' : 'Por Responsable',
             $envio->ubicacion?->nombre ?? '—',
             $envio->email_enviado_a,
+            $envio->firmante_nombre ?? '—',
             $envio->enviado_at?->format('Y-m-d H:i'),
-            $envio->estaAprobado() ? 'Aprobado' : 'Pendiente',
+            $envio->estaAprobado() ? 'Firmado' : 'Pendiente de firma',
             $envio->aprobado_at?->format('Y-m-d H:i') ?? '—',
             $envio->ip_aprobacion ?? '—',
+            $envio->firma_base64 ? 'Sí' : 'No',
             $envio->observaciones ?? '',
         ];
     }

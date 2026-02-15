@@ -18,10 +18,13 @@ class Responsable extends Model
         'telefono',
         'sede_id',
         'activo',
+        'es_firmante_entrega',
+        'firma_entrega_path',
     ];
 
     protected $casts = [
         'activo' => 'boolean',
+        'es_firmante_entrega' => 'boolean',
     ];
 
     // 'nombre_completo' is virtual in DB (generated column), but we can access it.
@@ -45,5 +48,19 @@ class Responsable extends Model
     public function sedesCoordinadas(): HasMany
     {
         return $this->hasMany(Sede::class, 'coordinador_id');
+    }
+
+    protected static function booted(): void
+    {
+        static::saved(function (Responsable $responsable) {
+            if (!$responsable->es_firmante_entrega) {
+                return;
+            }
+
+            static::query()
+                ->whereKeyNot($responsable->id)
+                ->where('es_firmante_entrega', true)
+                ->update(['es_firmante_entrega' => false]);
+        });
     }
 }

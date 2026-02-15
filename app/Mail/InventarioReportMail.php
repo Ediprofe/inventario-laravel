@@ -17,6 +17,12 @@ class InventarioReportMail extends Mailable
     public string $tipoReporte;
     public string $nombreReporte;
     public ?string $urlAprobacion;
+    public ?string $codigoEnvio;
+    public ?string $firmanteNombre;
+    public ?string $firmaResponsableBase64;
+    public ?string $firmaEntregaNombre;
+    public ?string $firmaEntregaCargo;
+    public ?string $firmaEntregaBase64;
     
     /** @var array<array{path: string, name: string}> */
     protected array $archivos;
@@ -27,12 +33,24 @@ class InventarioReportMail extends Mailable
         string $nombreReporte,
         string|array $archivoPath,
         string|array $archivoNombre,
-        ?string $urlAprobacion = null
+        ?string $urlAprobacion = null,
+        ?string $codigoEnvio = null,
+        ?string $firmanteNombre = null,
+        ?string $firmaResponsableBase64 = null,
+        ?string $firmaEntregaNombre = null,
+        ?string $firmaEntregaCargo = null,
+        ?string $firmaEntregaBase64 = null,
     ) {
         $this->destinatario = $destinatario;
         $this->tipoReporte = $tipoReporte;
         $this->nombreReporte = $nombreReporte;
         $this->urlAprobacion = $urlAprobacion;
+        $this->codigoEnvio = $codigoEnvio;
+        $this->firmanteNombre = $firmanteNombre;
+        $this->firmaResponsableBase64 = $firmaResponsableBase64;
+        $this->firmaEntregaNombre = $firmaEntregaNombre;
+        $this->firmaEntregaCargo = $firmaEntregaCargo;
+        $this->firmaEntregaBase64 = $firmaEntregaBase64;
 
         // Normalize to array of files for multi-attachment support
         if (is_array($archivoPath)) {
