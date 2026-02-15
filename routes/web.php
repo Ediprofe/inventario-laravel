@@ -52,5 +52,12 @@ Route::get('/inventario/aprobar/{token}', [\App\Http\Controllers\AprobacionInven
 Route::post('/inventario/aprobar/{token}', [\App\Http\Controllers\AprobacionInventarioController::class, 'confirmar'])
     ->name('inventario.aprobar.confirmar');
 
-require __DIR__.'/auth.php';
+// Public capture page for "firma de entrega" (signed URL)
+Route::get('/firma-entrega/capturar/{responsable}', [\App\Http\Controllers\FirmaEntregaController::class, 'mostrar'])
+    ->name('firma.entrega.capturar')
+    ->middleware('signed:relative');
+Route::post('/firma-entrega/capturar/{responsable}', [\App\Http\Controllers\FirmaEntregaController::class, 'guardar'])
+    ->name('firma.entrega.guardar')
+    ->middleware('signed:relative');
 
+require __DIR__.'/auth.php';

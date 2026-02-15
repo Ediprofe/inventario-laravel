@@ -7,6 +7,8 @@ use App\Filament\Resources\ResponsableResource\RelationManagers;
 use App\Models\Responsable;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Forms\Components\ViewField;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -49,15 +51,14 @@ class ResponsableResource extends Resource
                 Forms\Components\Toggle::make('es_firmante_entrega')
                     ->label('Firmante de entrega por defecto')
                     ->helperText('Si activa esta opción, este responsable quedará como firmante de entrega/verificación en los reportes.')
+                    ->live()
                     ->default(false),
-                Forms\Components\FileUpload::make('firma_entrega_path')
-                    ->label('Firma (imagen) para entrega/verificación')
-                    ->disk('public')
-                    ->directory('firmas-entrega')
-                    ->visibility('public')
-                    ->image()
-                    ->imageEditor()
-                    ->helperText('Se usará en correo y PDF como firma de quien entrega/verifica.'),
+                ViewField::make('firma_entrega_link')
+                    ->label('Firmar desde tablet/celular')
+                    ->view('filament.forms.components.firma-entrega-link')
+                    ->helperText('Genere y abra el enlace en la tablet para capturar la firma de entrega.')
+                    ->visible(fn (Get $get): bool => (bool) $get('es_firmante_entrega'))
+                    ->columnSpanFull(),
             ]);
     }
 

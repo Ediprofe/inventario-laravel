@@ -31,8 +31,28 @@ class ArticuloResource extends Resource
                     ->options(\App\Enums\CategoriaArticulo::class)
                     ->required(),
                 Forms\Components\TextInput::make('codigo')
-                    ->unique(ignoreRecord: true),
+                    ->unique(ignoreRecord: true)
+                    ->helperText('Si lo deja vacío, se genera automáticamente al guardar.'),
                 Forms\Components\Textarea::make('descripcion')
+                    ->columnSpanFull(),
+                Forms\Components\FileUpload::make('foto_path')
+                    ->label('Foto del artículo')
+                    ->disk('public')
+                    ->directory('articulos')
+                    ->visibility('public')
+                    ->image()
+                    ->imageResizeMode('contain')
+                    ->imageResizeTargetWidth(1200)
+                    ->imageResizeTargetHeight(1200)
+                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->maxSize(10240)
+                    ->validationMessages([
+                        'image' => 'Formato no compatible. Use JPG, PNG o WEBP.',
+                        'max' => 'La imagen supera el tamaño permitido (10 MB).',
+                    ])
+                    ->openable()
+                    ->downloadable()
+                    ->helperText('Opcional. Recomendado JPG/PNG/WEBP. Si sube JPG/PNG se optimiza automáticamente a WEBP. En iPhone, use Camara > Formatos > Mas compatible para evitar HEIC.')
                     ->columnSpanFull(),
                 Forms\Components\Toggle::make('activo')
                     ->required()
@@ -44,6 +64,10 @@ class ArticuloResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\ImageColumn::make('foto_path')
+                    ->label('Foto')
+                    ->disk('public')
+                    ->square(),
                 Tables\Columns\TextColumn::make('nombre')
                     ->searchable()
                     ->sortable(),
