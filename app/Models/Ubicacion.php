@@ -42,4 +42,9 @@ class Ubicacion extends Model
     {
         return $this->hasMany(Item::class);
     }
+
+    public function anexosInventarioInterno(): HasMany
+    {
+        return $this->hasMany(UbicacionInventarioAnexo::class);
+    }
 }

@@ -3,7 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UbicacionResource\Pages;
-use App\Filament\Resources\UbicacionResource\RelationManagers;
+use App\Filament\Resources\UbicacionResource\RelationManagers\AnexosInventarioInternoRelationManager;
 use App\Models\Ubicacion;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -160,7 +160,7 @@ class UbicacionResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            AnexosInventarioInternoRelationManager::class,
         ];
     }
 

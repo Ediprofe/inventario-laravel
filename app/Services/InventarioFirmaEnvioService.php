@@ -8,6 +8,7 @@ use App\Mail\InventarioReportMail;
 use App\Models\EnvioInventario;
 use App\Models\Responsable;
 use App\Models\Ubicacion;
+use App\Models\UbicacionInventarioAnexo;
 use App\Support\DompdfRuntimeConfig;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Mail;
@@ -117,6 +118,8 @@ class InventarioFirmaEnvioService
         $excelFilename = "Inventario_{$envio->codigo_envio}_{$descriptor}.xlsx";
         $pdfPath = $localDisk->path('temp/' . $pdfFilename);
         $excelPath = $localDisk->path('temp/' . $excelFilename);
+        $archivoPaths = [$pdfPath, $excelPath];
+        $archivoNombres = [$pdfFilename, $excelFilename];
 
         try {
             DompdfRuntimeConfig::apply();
@@ -128,21 +131,33 @@ class InventarioFirmaEnvioService
 
             Excel::store($excelExport, 'temp/' . $excelFilename, 'local');
 
+            if ($envio->tipo === 'por_ubicacion' && $envio->ubicacion_id) {
+                foreach ($this->getAdjuntableAnexosByUbicacion($envio->ubicacion_id) as $anexo) {
+                    $publicDisk = Storage::disk('public');
+                    if (!$publicDisk->exists($anexo->archivo_pdf_path)) {
+                        continue;
+                    }
+
+                    $archivoPaths[] = $publicDisk->path($anexo->archivo_pdf_path);
+                    $archivoNombres[] = $this->buildAnexoFilename($anexo);
+                }
+            }
+
             Mail::to($envio->email_enviado_a)->send(new InventarioReportMail(
                 destinatario: $envio->responsable?->nombre_completo ?? 'Responsable',
                 tipoReporte: $envio->tipo === 'por_ubicacion' ? 'Inventario por Ubicación' : 'Inventario por Responsable',
                 nombreReporte: $envio->tipo === 'por_ubicacion'
                     ? (($envio->ubicacion?->codigo ?? '') . ' - ' . ($envio->ubicacion?->nombre ?? 'Ubicación'))
                     : ($envio->responsable?->nombre_completo ?? 'Responsable'),
-                archivoPath: [$pdfPath, $excelPath],
-                archivoNombre: [$pdfFilename, $excelFilename],
+                archivoPath: $archivoPaths,
+                archivoNombre: $archivoNombres,
                 urlAprobacion: null,
                 codigoEnvio: $envio->codigo_envio,
                 firmanteNombre: $envio->firmante_nombre,
-                firmaResponsableBase64: $envio->firma_base64,
+                firmaResponsableBase64: null,
                 firmaEntregaNombre: $firmaEntrega['nombre'],
                 firmaEntregaCargo: $firmaEntrega['cargo'],
-                firmaEntregaBase64: $firmaEntrega['base64'],
+                firmaEntregaBase64: null,
             ));
 
             // Reflect actual email dispatch time.
@@ -245,5 +260,29 @@ class InventarioFirmaEnvioService
         }
 
         return 'data:' . $mime . ';base64,' . base64_encode($content);
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, UbicacionInventarioAnexo>
+     */
+    protected function getAdjuntableAnexosByUbicacion(int $ubicacionId)
+    {
+        return UbicacionInventarioAnexo::query()
+            ->where('ubicacion_id', $ubicacionId)
+            ->where('activo', true)
+            ->where('adjuntar_en_envio', true)
+            ->orderByDesc('fecha_corte')
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    protected function buildAnexoFilename(UbicacionInventarioAnexo $anexo): string
+    {
+        $slug = preg_replace('/[^A-Za-z0-9_-]+/', '_', $anexo->titulo) ?: 'anexo_interno';
+        $dateSuffix = $anexo->fecha_corte ? '_' . $anexo->fecha_corte->format('Ymd') : '';
+        $extension = strtolower((string) pathinfo((string) $anexo->archivo_pdf_path, PATHINFO_EXTENSION));
+        $extension = in_array($extension, ['pdf', 'docx', 'xlsx', 'doc', 'xls'], true) ? $extension : 'pdf';
+
+        return 'AnexoInventario_' . $slug . $dateSuffix . '.' . $extension;
     }
 }
