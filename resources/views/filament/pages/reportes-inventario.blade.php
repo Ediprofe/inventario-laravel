@@ -1,18 +1,19 @@
 <x-filament-panels::page>
-    <div class="flex flex-wrap gap-2 mb-6">
-        <a href="/admin/reportes-inventario"
-           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $activeTab === 'ubicacion' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300' }}">
-            📍 Por Ubicación
-        </a>
-        <a href="/admin/reportes-inventario-responsables"
-           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $activeTab === 'responsable' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300' }}">
-            👤 Por Responsable
-        </a>
-        <a href="/admin/reportes-inventario-consolidado"
-           class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $activeTab === 'consolidado' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300' }}">
-            📦 Consolidado Global
-        </a>
-    </div>
+    <div id="reportes-inventario-root">
+        <div class="flex flex-wrap gap-2 mb-6">
+            <a href="/admin/reportes-inventario"
+               class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $activeTab === 'ubicacion' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300' }}">
+                📍 Por Ubicación
+            </a>
+            <a href="/admin/reportes-inventario-responsables"
+               class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $activeTab === 'responsable' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300' }}">
+                👤 Por Responsable
+            </a>
+            <a href="/admin/reportes-inventario-consolidado"
+               class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $activeTab === 'consolidado' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300' }}">
+                📦 Consolidado Global
+            </a>
+        </div>
 
     {{-- TAB 1: POR UBICACIÓN --}}
     @if($activeTab === 'ubicacion')
@@ -604,6 +605,172 @@
 
     <script>
         const APP_PUBLIC_URL = @js(rtrim((string) config('app.public_url', ''), '/'));
+        let qrScriptPromise = null;
+
+        function ensureQrLib() {
+            if (window.QRCode && typeof window.QRCode.toCanvas === 'function') {
+                return Promise.resolve(window.QRCode);
+            }
+
+            if (qrScriptPromise) {
+                return qrScriptPromise;
+            }
+
+            qrScriptPromise = new Promise((resolve, reject) => {
+                const existing = document.getElementById('codex-qrcode-lib-reportes');
+
+                if (existing) {
+                    existing.addEventListener('load', () => resolve(window.QRCode), { once: true });
+                    existing.addEventListener('error', () => reject(new Error('No se pudo cargar QR')), { once: true });
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.id = 'codex-qrcode-lib-reportes';
+                script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js';
+                script.async = true;
+                script.onload = () => resolve(window.QRCode);
+                script.onerror = () => reject(new Error('No se pudo cargar QR'));
+                document.head.appendChild(script);
+            });
+
+            return qrScriptPromise;
+        }
+
+        function getFirmaModal() {
+            let modal = document.getElementById('firma-link-modal');
+            if (modal) {
+                return modal;
+            }
+
+            modal = document.createElement('div');
+            modal.id = 'firma-link-modal';
+            modal.style.cssText = 'position:fixed; inset:0; z-index:9999; display:none; align-items:center; justify-content:center; padding:18px; background:rgba(2,6,23,.72);';
+            modal.innerHTML = `
+                <div style="width:min(920px, 100%); border-radius:14px; border:1px solid #334155; background:#0f172a; color:#e2e8f0; box-shadow:0 20px 50px rgba(0,0,0,.45);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 16px; border-bottom:1px solid #334155;">
+                        <div style="font-size:15px; font-weight:700;">Enlace de firma generado</div>
+                        <button type="button" id="firma-link-modal-close" style="border:none; border-radius:8px; background:#1e293b; color:#cbd5e1; width:30px; height:30px; cursor:pointer; font-size:18px; line-height:1;">×</button>
+                    </div>
+                    <div style="padding:16px;">
+                        <div id="firma-link-meta" style="font-size:13px; color:#93c5fd; margin-bottom:12px;"></div>
+                        <div style="display:flex; gap:14px; flex-wrap:wrap; align-items:flex-start;">
+                            <div style="flex:0 0 240px; border:1px solid #334155; border-radius:10px; background:#020617; padding:10px; text-align:center;">
+                                <canvas id="firma-link-qr-canvas" width="220" height="220" style="display:block; width:220px; height:220px; margin:0 auto; background:#fff; border-radius:8px;"></canvas>
+                                <img id="firma-link-qr-image" alt="QR firma inventario" style="display:none; width:220px; height:220px; margin:0 auto; background:#fff; border-radius:8px;" />
+                                <div id="firma-link-qr-status" style="margin-top:8px; font-size:11px; color:#94a3b8;">Escanea con la cámara de la tablet/celular.</div>
+                            </div>
+                            <div style="flex:1 1 420px;">
+                                <textarea id="firma-link-url" readonly rows="4" style="width:100%; border:1px solid #475569; border-radius:10px; background:#020617; color:#e2e8f0; padding:10px; font-size:12px; line-height:1.45; resize:vertical;"></textarea>
+                                <div style="margin-top:10px; display:flex; flex-wrap:wrap; gap:8px; align-items:center;">
+                                    <button type="button" id="firma-link-copy" style="border:none; border-radius:8px; padding:8px 12px; background:#f59e0b; color:#111827; font-weight:700; cursor:pointer;">Copiar enlace</button>
+                                    <a id="firma-link-open" href="#" target="_blank" rel="noopener noreferrer" style="display:inline-block; border-radius:8px; padding:8px 12px; background:#1d4ed8; color:#f8fafc; font-weight:700; text-decoration:none;">Abrir enlace</a>
+                                    <span id="firma-link-copy-status" style="font-size:12px; color:#93c5fd;"></span>
+                                </div>
+                                <div style="margin-top:10px; font-size:12px; color:#94a3b8;">
+                                    Si el QR no abre por red, use "Copiar enlace" y ábralo en la tablet.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            const closeModal = () => {
+                modal.style.display = 'none';
+            };
+
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+
+            const closeBtn = modal.querySelector('#firma-link-modal-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeModal);
+            }
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && modal.style.display !== 'none') {
+                    closeModal();
+                }
+            });
+
+            return modal;
+        }
+
+        async function showFirmaModal({ firmaUrl, codigo, emailDestino, message }) {
+            const modal = getFirmaModal();
+            const meta = modal.querySelector('#firma-link-meta');
+            const input = modal.querySelector('#firma-link-url');
+            const openBtn = modal.querySelector('#firma-link-open');
+            const copyBtn = modal.querySelector('#firma-link-copy');
+            const copyStatus = modal.querySelector('#firma-link-copy-status');
+            const canvas = modal.querySelector('#firma-link-qr-canvas');
+            const image = modal.querySelector('#firma-link-qr-image');
+            const qrStatus = modal.querySelector('#firma-link-qr-status');
+
+            input.value = firmaUrl || '';
+            openBtn.href = firmaUrl || '#';
+            meta.textContent = `Código: ${codigo || 'N/A'}${emailDestino ? ` | Destino: ${emailDestino}` : ''}${message ? ` | ${message}` : ''}`;
+            copyStatus.textContent = '';
+            qrStatus.textContent = 'Escanea con la cámara de la tablet/celular.';
+            canvas.style.display = 'block';
+            image.style.display = 'none';
+            image.src = '';
+            modal.style.display = 'flex';
+
+            copyBtn.onclick = async () => {
+                try {
+                    await navigator.clipboard.writeText(input.value || '');
+                    copyStatus.textContent = 'Enlace copiado.';
+                    setTimeout(() => { copyStatus.textContent = ''; }, 2200);
+                } catch (_) {
+                    prompt('Copie este enlace:', input.value || '');
+                }
+            };
+
+            if (!firmaUrl) {
+                qrStatus.textContent = 'No se encontró URL de firma. Use token o regenere el enlace.';
+                return;
+            }
+
+            const showImageFallback = () => {
+                image.src = `https://quickchart.io/qr?size=220&margin=1&text=${encodeURIComponent(firmaUrl)}`;
+                image.style.display = 'block';
+                canvas.style.display = 'none';
+                qrStatus.textContent = 'QR generado por fallback. Escanee desde la tablet.';
+            };
+
+            try {
+                await ensureQrLib();
+                if (!window.QRCode || typeof window.QRCode.toCanvas !== 'function') {
+                    showImageFallback();
+                    return;
+                }
+
+                window.QRCode.toCanvas(canvas, firmaUrl, {
+                    width: 220,
+                    margin: 1,
+                    color: {
+                        dark: '#0f172a',
+                        light: '#ffffff',
+                    },
+                }, (err) => {
+                    if (err) {
+                        showImageFallback();
+                        return;
+                    }
+
+                    qrStatus.textContent = 'Escanea con la cámara de la tablet/celular.';
+                });
+            } catch (_) {
+                showImageFallback();
+            }
+        }
 
         async function generarEnlaceFirma(url, btn) {
             if (!confirm('¿Generar enlace para firma en tablet/celular?')) return;
@@ -640,22 +807,15 @@
                     const firmaUrl = data.url_firma || (firmaRuta && APP_PUBLIC_URL ? `${APP_PUBLIC_URL}${firmaRuta}` : '');
                     const token = data.token || '';
                     const codigo = data.codigo_envio || '';
-                    let copied = false;
-
-                    if (firmaUrl && navigator.clipboard) {
-                        try {
-                            await navigator.clipboard.writeText(firmaUrl);
-                            copied = true;
-                        } catch (_) {
-                            copied = false;
-                        }
-                    }
-
-                    if (copied) {
-                        alert(`Enlace de firma copiado.\n\n${firmaUrl}\n\nCódigo: ${codigo}`);
-                    } else {
-                        prompt('Copie este enlace y péguelo en la tablet/celular:', firmaUrl || token);
-                    }
+                    const emailDestino = data.email_destino || '';
+                    const fallbackUrl = token && APP_PUBLIC_URL ? `${APP_PUBLIC_URL}/inventario/aprobar/${token}` : '';
+                    const finalUrl = firmaUrl || fallbackUrl;
+                    await showFirmaModal({
+                        firmaUrl: finalUrl,
+                        codigo: codigo,
+                        emailDestino: emailDestino,
+                        message: data.message || '',
+                    });
 
                     setTimeout(() => {
                         btn.classList.remove('bg-green-600');
@@ -675,4 +835,5 @@
             }
         }
     </script>
+    </div>
 </x-filament-panels::page>
