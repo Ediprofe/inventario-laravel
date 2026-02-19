@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Disponibilidad;
+use App\Enums\EstadoFisico;
 use App\Filament\Resources\ItemResource\Pages;
 use App\Models\Item;
 use Filament\Forms;
@@ -102,9 +104,23 @@ class ItemResource extends Resource
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('estado')
+                    ->label('Estado')
+                    ->formatStateUsing(fn (EstadoFisico|string|null $state): string => $state instanceof EstadoFisico
+                        ? $state->getLabel()
+                        : (EstadoFisico::tryFrom((string) $state)?->getLabel() ?? 'Sin Estado'))
+                    ->color(fn (EstadoFisico|string|null $state): string|array|null => $state instanceof EstadoFisico
+                        ? $state->getColor()
+                        : EstadoFisico::tryFrom((string) $state)?->getColor())
                     ->badge()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('disponibilidad')
+                    ->label('Disponibilidad')
+                    ->formatStateUsing(fn (Disponibilidad|string|null $state): string => $state instanceof Disponibilidad
+                        ? $state->getLabel()
+                        : (Disponibilidad::tryFrom((string) $state)?->getLabel() ?? 'Sin definir'))
+                    ->color(fn (Disponibilidad|string|null $state): string|array|null => $state instanceof Disponibilidad
+                        ? $state->getColor()
+                        : Disponibilidad::tryFrom((string) $state)?->getColor())
                     ->badge()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('descripcion')
@@ -127,6 +143,9 @@ class ItemResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('created_at', 'desc')
+            ->striped()
+            ->defaultPaginationPageOption(50)
+            ->paginationPageOptions([25, 50, 100])
             ->filters([
                 Tables\Filters\SelectFilter::make('sede')
                     ->relationship('sede', 'nombre'),

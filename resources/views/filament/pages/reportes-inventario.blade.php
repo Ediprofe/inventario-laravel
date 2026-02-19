@@ -115,23 +115,24 @@
 
                 {{-- Inventory Table --}}
                 <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-950/5 overflow-hidden dark:bg-gray-900 dark:ring-white/10">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center dark:border-gray-800">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Resumen de Inventario</h3>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Items en esta ubicación agrupados por artículo. Haz clic en Estado o Disponibilidad para filtrar el detalle.</p>
-                        </div>
-                        <div class="flex items-center gap-3">
+                    <div class="px-5 py-4 border-b border-gray-100 bg-slate-50/70 dark:border-gray-800 dark:bg-gray-900/60">
+                        <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Resumen de Inventario</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Items en esta ubicación agrupados por artículo. Haz clic en Estado o Disponibilidad para filtrar el detalle.</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2 xl:justify-end">
                             <a href="{{ $this->createItemUrl }}"
-                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap">
                                 + Nuevo ítem aquí
                             </a>
                             <a href="{{ $this->batchItemsUrl }}"
-                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors">
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white text-xs md:text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap">
                                 + Agregar lote aquí
                             </a>
                             <a href="{{ route('reportes.pdf.ubicacion', $this->ubicacionId, false) }}" 
                                target="_blank"
-                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-xs md:text-sm font-medium rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
@@ -139,39 +140,41 @@
                             </a>
                             <a href="{{ route('reportes.excel.ubicacion', $this->ubicacionId, false) }}" 
                                target="_blank"
-                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-xs md:text-sm font-medium rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                 </svg>
                                 Excel
                             </a>
                             <button onclick="generarEnlaceFirma('{{ route('reportes.pdf.ubicacion.enviar', $this->ubicacionId, false) }}', this)"
-                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs md:text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                                 Generar link firma
                             </button>
-                            <span class="px-3 py-1 bg-blue-100 text-blue-700 font-bold rounded-full text-sm dark:bg-blue-900 dark:text-blue-300">
+                            <span class="px-3 py-1.5 bg-blue-100 text-blue-700 font-bold rounded-full text-xs md:text-sm dark:bg-blue-900 dark:text-blue-300 whitespace-nowrap">
                                 {{ $this->totalItemsUbicacion }} Items
                             </span>
                         </div>
+                        </div>
                     </div>
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                    <div class="overflow-x-auto">
+                    <table class="w-full text-left text-[13px] md:text-sm">
+                        <thead class="bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
                             <tr>
-                                <th class="px-6 py-3 font-medium">Artículo</th>
-                                <th class="px-6 py-3 font-medium text-right">Cantidad</th>
-                                <th class="px-6 py-3 font-medium">Disponibilidad</th>
-                                <th class="px-6 py-3 font-medium">Estado</th>
+                                <th class="px-6 py-3 font-semibold">Artículo</th>
+                                <th class="px-6 py-3 font-semibold text-right">Cantidad</th>
+                                <th class="px-6 py-3 font-semibold">Disponibilidad</th>
+                                <th class="px-6 py-3 font-semibold">Estado</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                             @foreach($this->itemsPorUbicacion as $row)
-                                <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                <tr class="odd:bg-white even:bg-slate-50/45 hover:bg-blue-50/45 dark:odd:bg-gray-900 dark:even:bg-gray-900/70 dark:hover:bg-white/5 transition-colors">
                                     <td class="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">{{ $row['articulo'] }}</td>
                                     <td class="px-6 py-4 text-right">
-                                        <span class="px-3 py-1 bg-blue-50 text-blue-600 rounded-full font-bold dark:bg-blue-900/50 dark:text-blue-400">
+                                        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full font-semibold dark:bg-blue-900/50 dark:text-blue-300">
                                             {{ $row['cantidad'] }}
                                         </span>
                                     </td>
@@ -222,6 +225,7 @@
                             @endif
                         </tbody>
                     </table>
+                    </div>
                 </div>
             @else
                 <div class="text-center p-12 text-gray-500">Seleccione una ubicación para ver los detalles.</div>
@@ -295,18 +299,28 @@
                              </span>
                         </div>
                     </div>
-                    <div class="ml-auto flex items-center gap-3">
+                </div>
+
+                {{-- Table --}}
+                 <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-950/5 overflow-hidden dark:bg-gray-900 dark:ring-white/10">
+                    <div class="px-5 py-4 border-b border-gray-100 bg-slate-50/70 dark:border-gray-800 dark:bg-gray-900/60">
+                        <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Resumen por Ubicación y Artículo</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Haz clic en Estado o Disponibilidad para filtrar el detalle asignado al responsable.</p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2 xl:justify-end">
                         <a href="{{ $this->createItemUrlResponsable }}"
-                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-xs md:text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors whitespace-nowrap">
                             + Nuevo ítem
                         </a>
                         <a href="{{ $this->batchItemsUrlResponsable }}"
-                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors">
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white text-xs md:text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors whitespace-nowrap">
                             + Agregar lote
                         </a>
                         <a href="{{ route('reportes.pdf.responsable', $this->responsableFilterId, false) }}" 
                            target="_blank"
-                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors">
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 text-white text-xs md:text-sm font-medium rounded-lg hover:bg-red-700 transition-colors whitespace-nowrap">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
@@ -314,41 +328,40 @@
                         </a>
                         <a href="{{ route('reportes.excel.responsable', $this->responsableFilterId, false) }}" 
                            target="_blank"
-                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white text-xs md:text-sm font-medium rounded-lg hover:bg-green-700 transition-colors whitespace-nowrap">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             Excel
                         </a>
                         <button onclick="generarEnlaceFirma('{{ route('reportes.pdf.responsable.enviar', $this->responsableFilterId, false) }}', this)"
-                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs md:text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors whitespace-nowrap">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                             Generar link firma
                         </button>
-                        <span class="px-4 py-2 bg-purple-100 text-purple-700 font-bold rounded-full dark:bg-purple-900 dark:text-purple-300">
+                        <span class="px-3 py-1.5 bg-purple-100 text-purple-700 font-bold rounded-full text-xs md:text-sm dark:bg-purple-900 dark:text-purple-300 whitespace-nowrap">
                             {{ $this->totalItemsResponsable }} Items Total
                         </span>
                     </div>
-                </div>
-
-                {{-- Table --}}
-                 <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-950/5 overflow-hidden dark:bg-gray-900 dark:ring-white/10">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                    <table class="w-full text-left text-[13px] md:text-sm">
+                        <thead class="bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-300">
                             <tr>
-                                <th class="px-6 py-3 font-medium">Cód. Ubicación</th>
-                                <th class="px-6 py-3 font-medium">Ubicación</th>
-                                <th class="px-6 py-3 font-medium">Artículo</th>
-                                <th class="px-6 py-3 font-medium text-right">Cantidad</th>
-                                <th class="px-6 py-3 font-medium">Disponibilidad</th>
-                                <th class="px-6 py-3 font-medium">Estado</th>
+                                <th class="px-6 py-3 font-semibold">Cód. Ubicación</th>
+                                <th class="px-6 py-3 font-semibold">Ubicación</th>
+                                <th class="px-6 py-3 font-semibold">Artículo</th>
+                                <th class="px-6 py-3 font-semibold text-right">Cantidad</th>
+                                <th class="px-6 py-3 font-semibold">Disponibilidad</th>
+                                <th class="px-6 py-3 font-semibold">Estado</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                             @foreach($this->itemsPorResponsable as $row)
-                                <tr class="group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                                <tr class="group odd:bg-white even:bg-slate-50/45 hover:bg-purple-50/35 dark:odd:bg-gray-900 dark:even:bg-gray-900/70 dark:hover:bg-white/5 transition-colors">
                                     <td class="px-6 py-4 text-gray-500 dark:text-gray-400 font-mono text-xs">{{ $row['codigo_ubicacion'] }}</td>
                                     <td class="px-6 py-4 text-gray-600 dark:text-gray-300">
                                         <div class="flex items-center gap-2">
@@ -409,6 +422,7 @@
                             @endif
                         </tbody>
                     </table>
+                    </div>
                 </div>
 
                 <div class="mt-8">
@@ -481,8 +495,13 @@
                  </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-950/5 overflow-x-auto dark:bg-gray-900 dark:ring-white/10">
-                 <table class="w-full text-left text-sm whitespace-nowrap">
+            <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-950/5 overflow-hidden dark:bg-gray-900 dark:ring-white/10">
+                <div class="px-5 py-4 border-b border-gray-100 bg-slate-50/70 dark:border-gray-800 dark:bg-gray-900/60">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Matriz Consolidada por Sede</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Cruce por artículo, disponibilidad y estado. Los chips filtran el detalle inferior.</p>
+                </div>
+                <div class="overflow-x-auto">
+                 <table class="w-full text-left text-[13px] md:text-sm whitespace-nowrap">
                     <thead class="bg-gray-50 border-b border-gray-200 dark:bg-gray-800 dark:border-gray-700">
                         <tr>
                             <th class="px-6 py-4 font-bold text-gray-900 sticky left-0 bg-gray-50 dark:bg-gray-800 dark:text-white z-10">Artículo</th>
@@ -496,7 +515,7 @@
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                         @foreach($this->matrixData['rows'] as $row)
-                            <tr class="group hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
+                            <tr class="group odd:bg-white even:bg-slate-50/35 hover:bg-blue-50/35 dark:odd:bg-gray-900 dark:even:bg-gray-900/70 dark:hover:bg-white/5 transition-colors duration-150">
                                 <td class="px-6 py-4 font-medium text-gray-900 sticky left-0 bg-white dark:bg-gray-900 group-hover:bg-gray-50 dark:group-hover:bg-gray-800 dark:text-gray-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] transition-colors">
                                     {{ $row['nombre'] }}
                                 </td>
@@ -509,6 +528,7 @@
                                                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">Total: {{ $cell['total'] }}</span>
                                                 
                                                 <div class="w-full space-y-1">
+                                                    <p class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">Disponibilidad</p>
                                                     @foreach($cell['disponibilidad_breakdown'] as $b)
                                                         <button
                                                             wire:click="filtrarDisponibilidadConsolidado({{ $row['id'] }}, {{ $sede->id }}, '{{ $b['value'] }}')"
@@ -529,6 +549,7 @@
 
                                                 <div class="w-full border-t border-gray-100 pt-1 dark:border-gray-800">
                                                     <div class="w-full space-y-1">
+                                                        <p class="text-[10px] uppercase tracking-wide text-gray-400 dark:text-gray-500">Estado</p>
                                                         @foreach($cell['breakdown'] as $b)
                                                             <button
                                                                 wire:click="filtrarDetalleConsolidado({{ $row['id'] }}, {{ $sede->id }}, '{{ $b['value'] }}')"
@@ -560,6 +581,7 @@
                         @endforeach
                     </tbody>
                  </table>
+                </div>
             </div>
 
             <div class="mt-8">
