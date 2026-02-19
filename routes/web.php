@@ -48,16 +48,18 @@ Route::middleware('auth')->prefix('reportes-excel')->group(function () {
 
 // Public inventory approval (no auth required)
 Route::get('/inventario/aprobar/{token}', [\App\Http\Controllers\AprobacionInventarioController::class, 'mostrar'])
+    ->middleware('throttle:inventario-aprobacion-view')
     ->name('inventario.aprobar');
 Route::post('/inventario/aprobar/{token}', [\App\Http\Controllers\AprobacionInventarioController::class, 'confirmar'])
+    ->middleware('throttle:inventario-aprobacion-submit')
     ->name('inventario.aprobar.confirmar');
 
 // Public capture page for "firma de entrega" (signed URL)
 Route::get('/firma-entrega/capturar/{responsable}', [\App\Http\Controllers\FirmaEntregaController::class, 'mostrar'])
     ->name('firma.entrega.capturar')
-    ->middleware('signed:relative');
+    ->middleware(['signed:relative', 'throttle:firma-entrega-view']);
 Route::post('/firma-entrega/capturar/{responsable}', [\App\Http\Controllers\FirmaEntregaController::class, 'guardar'])
     ->name('firma.entrega.guardar')
-    ->middleware('signed:relative');
+    ->middleware(['signed:relative', 'throttle:firma-entrega-submit']);
 
 require __DIR__.'/auth.php';

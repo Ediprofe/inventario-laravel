@@ -2,17 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Inventario\ConfirmarInventarioFirmaRequest;
 use App\Models\EnvioInventario;
 use App\Services\InventarioFirmaEnvioService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class AprobacionInventarioController extends Controller
 {
     public function __construct(
         protected InventarioFirmaEnvioService $firmaEnvioService,
-    ) {
-    }
+    ) {}
 
     /**
      * Show the approval page for an inventory submission
@@ -29,7 +28,7 @@ class AprobacionInventarioController extends Controller
     /**
      * Confirm/approve the inventory submission
      */
-    public function confirmar(Request $request, string $token)
+    public function confirmar(ConfirmarInventarioFirmaRequest $request, string $token)
     {
         $envio = EnvioInventario::where('token', $token)->firstOrFail();
 
@@ -37,18 +36,14 @@ class AprobacionInventarioController extends Controller
             return redirect()->back()->with('info', 'Este inventario ya fue firmado anteriormente.');
         }
 
-        $request->validate([
-            'observaciones' => 'nullable|string|max:1000',
-            'firmante_nombre' => 'required|string|max:120',
-            'firma_data' => 'required|string|starts_with:data:image/png;base64,',
-        ]);
+        $validated = $request->validated();
 
         $envio->update([
             'aprobado_at' => now(),
             'ip_aprobacion' => $request->ip(),
-            'firmante_nombre' => trim((string) $request->firmante_nombre),
-            'firma_base64' => $request->firma_data,
-            'observaciones' => $request->observaciones,
+            'firmante_nombre' => $validated['firmante_nombre'],
+            'firma_base64' => $validated['firma_data'],
+            'observaciones' => $validated['observaciones'] ?? null,
         ]);
 
         try {

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Inventario\GuardarFirmaEntregaRequest;
 use App\Models\Responsable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -19,15 +20,11 @@ class FirmaEntregaController extends Controller
         ]);
     }
 
-    public function guardar(Request $request, Responsable $responsable)
+    public function guardar(GuardarFirmaEntregaRequest $request, Responsable $responsable)
     {
         abort_unless($request->hasValidSignature(false), 403);
 
-        $validated = $request->validate([
-            'firma_data' => 'required|string|starts_with:data:image/png;base64,',
-        ]);
-
-        $data = $validated['firma_data'];
+        $data = $request->validated()['firma_data'];
         $encoded = substr($data, strpos($data, ',') + 1);
         $binary = base64_decode($encoded, true);
 
@@ -37,7 +34,7 @@ class FirmaEntregaController extends Controller
             ])->withInput();
         }
 
-        $path = 'firmas-entrega/' . Str::uuid() . '.png';
+        $path = 'firmas-entrega/'.Str::uuid().'.png';
         Storage::disk('public')->put($path, $binary);
 
         if ($responsable->firma_entrega_path && Storage::disk('public')->exists($responsable->firma_entrega_path)) {
