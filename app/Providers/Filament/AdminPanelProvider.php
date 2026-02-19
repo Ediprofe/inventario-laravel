@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->sidebarCollapsibleOnDesktop()
             ->defaultThemeMode(ThemeMode::Dark)
             ->darkMode(true)
             ->renderHook(
@@ -41,8 +42,16 @@ class AdminPanelProvider extends PanelProvider
                 </style>',
             )
             ->renderHook(
+                'panels::head.end',
+                fn (): string => view('filament.hooks.sidebar-default-collapsed')->render(),
+            )
+            ->renderHook(
                 'panels::body.end',
                 fn (): string => view('filament.hooks.table-keyboard-selection')->render(),
+            )
+            ->renderHook(
+                'panels::body.end',
+                fn (): string => view('filament.hooks.sidebar-shortcuts')->render(),
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
