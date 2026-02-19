@@ -43,6 +43,13 @@ return [
             'transaction_mode' => 'DEFERRED',
         ],
 
+        'sqlite_legacy' => [
+            'driver' => 'sqlite',
+            'database' => database_path('database.sqlite'),
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),
@@ -96,6 +103,20 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => 'prefer',
+        ],
+
+        'pgsql_migration' => [
+            'driver' => 'pgsql',
+            'host' => env('PGMIG_HOST', '127.0.0.1'),
+            'port' => env('PGMIG_PORT', '5432'),
+            'database' => env('PGMIG_DATABASE', 'inventario'),
+            'username' => env('PGMIG_USERNAME', 'postgres'),
+            'password' => env('PGMIG_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('PGMIG_SSLMODE', 'prefer'),
         ],
 
         'sqlsrv' => [

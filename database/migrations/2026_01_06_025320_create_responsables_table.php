@@ -2,17 +2,24 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('responsables', function (Blueprint $table) {
+        $driver = DB::connection(config('database.default'))->getDriverName();
+
+        Schema::create('responsables', function (Blueprint $table) use ($driver) {
             $table->id();
             $table->string('nombre');
             $table->string('apellido');
-            $table->string('nombre_completo')->virtualAs('nombre || \' \' || apellido'); // SQLite/Postgres compatible
+            if ($driver === 'pgsql') {
+                $table->string('nombre_completo')->storedAs("nombre || ' ' || apellido");
+            } else {
+                $table->string('nombre_completo')->virtualAs("nombre || ' ' || apellido");
+            }
             $table->string('tipo_documento')->nullable();
             $table->string('documento')->nullable();
             $table->string('cargo')->nullable();
