@@ -40,6 +40,10 @@ class AdminPanelProvider extends PanelProvider
                     [data-fi-theme-switcher] { display: none !important; }
                 </style>',
             )
+            ->renderHook(
+                'panels::body.end',
+                fn (): string => view('filament.hooks.table-keyboard-selection')->render(),
+            )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([
