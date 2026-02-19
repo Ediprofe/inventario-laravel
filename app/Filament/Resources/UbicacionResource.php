@@ -10,15 +10,13 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UbicacionResource extends Resource
 {
     protected static ?string $model = Ubicacion::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    
+
     protected static ?string $pluralModelLabel = 'Ubicaciones';
 
     public static function form(Form $form): Form
@@ -95,7 +93,7 @@ class UbicacionResource extends Resource
                                 ->orWhere('nombre', 'like', '%laptop%'))
                             ->with(['articulo', 'responsable'])
                             ->get();
-                        
+
                         $formFields = [
                             Forms\Components\Select::make('nuevo_responsable_id')
                                 ->label('Nuevo Responsable')
@@ -103,26 +101,26 @@ class UbicacionResource extends Resource
                                 ->searchable()
                                 ->required(),
                         ];
-                        
+
                         if ($portatiles->count() > 0) {
                             $formFields[] = Forms\Components\Placeholder::make('aviso_portatiles')
                                 ->label('')
-                                ->content('⚠️ Se detectaron ' . $portatiles->count() . ' portátiles en esta ubicación. Seleccione cuáles desea transferir:');
-                            
+                                ->content('⚠️ Se detectaron '.$portatiles->count().' portátiles en esta ubicación. Seleccione cuáles desea transferir:');
+
                             $formFields[] = Forms\Components\CheckboxList::make('portatiles_a_transferir')
                                 ->label('Portátiles')
                                 ->options(
                                     $portatiles->mapWithKeys(fn ($item) => [
-                                        $item->id => $item->articulo->nombre . 
-                                            ' | Placa: ' . ($item->placa ?: 'N/A') . 
-                                            ' | Resp: ' . ($item->responsable?->nombre_completo ?: 'Sin asignar')
+                                        $item->id => $item->articulo->nombre.
+                                            ' | Placa: '.($item->placa ?: 'N/A').
+                                            ' | Resp: '.($item->responsable?->nombre_completo ?: 'Sin asignar'),
                                     ])->toArray()
                                 )
                                 ->columns(1)
                                 ->bulkToggleable()
                                 ->helperText('Los portátiles NO seleccionados mantendrán su responsable actual.');
                         }
-                        
+
                         return $formFields;
                     })
                     ->action(function (Ubicacion $record, array $data) {
@@ -133,15 +131,15 @@ class UbicacionResource extends Resource
                                 ->orWhere('nombre', 'like', '%laptop%'))
                             ->pluck('id')
                             ->toArray();
-                        
+
                         $portatilesATransferir = $data['portatiles_a_transferir'] ?? [];
                         $portatilesAExcluir = array_diff($todosPortatiles, $portatilesATransferir);
-                        
+
                         // Update all items EXCEPT excluded laptops
                         $count = $record->items()
                             ->whereNotIn('id', $portatilesAExcluir)
                             ->update([
-                                'responsable_id' => $data['nuevo_responsable_id']
+                                'responsable_id' => $data['nuevo_responsable_id'],
                             ]);
 
                         \Filament\Notifications\Notification::make()

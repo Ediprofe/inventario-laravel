@@ -3,17 +3,14 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ResponsableResource\Pages;
-use App\Filament\Resources\ResponsableResource\RelationManagers;
 use App\Models\Responsable;
 use Filament\Forms;
+use Filament\Forms\Components\ViewField;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Forms\Components\ViewField;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ResponsableResource extends Resource
 {
@@ -30,12 +27,12 @@ class ResponsableResource extends Resource
                 Forms\Components\TextInput::make('apellido')
                     ->required(),
                 Forms\Components\Select::make('tipo_documento')
-                     ->options([
+                    ->options([
                         'CC' => 'Cédula de Ciudadanía',
                         'TI' => 'Tarjeta de Identidad',
                         'CE' => 'Cédula de Extranjería',
                         'PASAPORTE' => 'Pasaporte',
-                     ]),
+                    ]),
                 Forms\Components\TextInput::make('documento'),
                 Forms\Components\TextInput::make('cargo'),
                 Forms\Components\TextInput::make('email')

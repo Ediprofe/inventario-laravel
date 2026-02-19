@@ -12,7 +12,9 @@ class ListItems extends ListRecords
     protected static string $resource = ItemResource::class;
 
     public ?int $prefillSedeId = null;
+
     public ?int $prefillUbicacionId = null;
+
     public ?int $prefillResponsableId = null;
 
     public function mount(): void
@@ -47,8 +49,8 @@ class ListItems extends ListRecords
                         ->required(),
                 ])
                 ->action(function (array $data, \App\Services\ResetImportService $service) {
-                    $path = storage_path('app/public/' . $data['attachment']);
-                    
+                    $path = storage_path('app/public/'.$data['attachment']);
+
                     try {
                         $result = $service->import($path);
                         \Filament\Notifications\Notification::make()
@@ -70,14 +72,14 @@ class ListItems extends ListRecords
                 ->color('success')
                 ->icon('heroicon-o-arrow-down-tray')
                 ->action(function () {
-                    return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\InventoryExport(), 'Backup_Inventario_' . date('Y-m-d_H-i') . '.xlsx');
+                    return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\InventoryExport, 'Backup_Inventario_'.date('Y-m-d_H-i').'.xlsx');
                 }),
             Actions\Action::make('audit_report')
                 ->label('Reporte de Auditoría')
                 ->color('info')
                 ->icon('heroicon-o-clipboard-document-list')
                 ->action(function () {
-                    return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AuditReportExport(), 'Inventario_Institucional-' . date('Y-m-d') . '.xlsx');
+                    return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\AuditReportExport, 'Inventario_Institucional-'.date('Y-m-d').'.xlsx');
                 }),
             Actions\Action::make('batch_create')
                 ->label('Agregar Lote')
@@ -98,10 +100,9 @@ class ListItems extends ListRecords
                                 ->afterStateUpdated(fn (\Filament\Forms\Set $set) => $set('ubicacion_id', null)),
                             \Filament\Forms\Components\Select::make('ubicacion_id')
                                 ->label('Ubicación')
-                                ->options(fn (\Filament\Forms\Get $get) => 
-                                    \App\Models\Ubicacion::where('sede_id', $get('sede_id'))
-                                        ->get()
-                                        ->mapWithKeys(fn ($ubi) => [$ubi->id => $ubi->codigo . ' - ' . $ubi->nombre])
+                                ->options(fn (\Filament\Forms\Get $get) => \App\Models\Ubicacion::where('sede_id', $get('sede_id'))
+                                    ->get()
+                                    ->mapWithKeys(fn ($ubi) => [$ubi->id => $ubi->codigo.' - '.$ubi->nombre])
                                 )
                                 ->default(fn () => $this->prefillUbicacionId)
                                 ->required()
@@ -153,28 +154,30 @@ class ListItems extends ListRecords
                     $placas = collect($data['items'])
                         ->pluck('placa')
                         ->filter(fn ($p) => $p && $p !== '' && $p !== 'NA');
-                    
+
                     // Check for duplicates within the batch
                     $duplicatesInBatch = $placas->duplicates()->values();
                     if ($duplicatesInBatch->isNotEmpty()) {
                         \Filament\Notifications\Notification::make()
                             ->title('Placas duplicadas en el lote')
-                            ->body('Las siguientes placas están repetidas: ' . $duplicatesInBatch->implode(', '))
+                            ->body('Las siguientes placas están repetidas: '.$duplicatesInBatch->implode(', '))
                             ->danger()
                             ->persistent()
                             ->send();
+
                         return;
                     }
-                    
+
                     // Check for duplicates against existing DB records
                     $existingPlacas = \App\Models\Item::whereIn('placa', $placas->toArray())->pluck('placa');
                     if ($existingPlacas->isNotEmpty()) {
                         \Filament\Notifications\Notification::make()
                             ->title('Placas ya existentes')
-                            ->body('Las siguientes placas ya existen en el inventario: ' . $existingPlacas->implode(', '))
+                            ->body('Las siguientes placas ya existen en el inventario: '.$existingPlacas->implode(', '))
                             ->danger()
                             ->persistent()
                             ->send();
+
                         return;
                     }
 
@@ -186,7 +189,7 @@ class ListItems extends ListRecords
                         'estado' => $data['estado'],
                         'disponibilidad' => $data['disponibilidad'],
                     ];
-                    
+
                     $count = 0;
                     foreach ($data['items'] as $itemData) {
                         \App\Models\Item::create(array_merge($commonData, [
@@ -197,7 +200,7 @@ class ListItems extends ListRecords
                         ]));
                         $count++;
                     }
-                    
+
                     \Filament\Notifications\Notification::make()
                         ->title('Lote Creado')
                         ->body("Se crearon {$count} ítems correctamente.")

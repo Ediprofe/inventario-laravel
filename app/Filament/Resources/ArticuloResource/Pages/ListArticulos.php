@@ -21,8 +21,8 @@ class ListArticulos extends ListRecords
                 ->icon('heroicon-o-arrow-down-tray')
                 ->color('success')
                 ->action(fn () => Excel::download(
-                    new ArticulosResumenExport(),
-                    'Resumen_Articulos_' . date('Y-m-d_H-i') . '.xlsx'
+                    new ArticulosResumenExport,
+                    'Resumen_Articulos_'.date('Y-m-d_H-i').'.xlsx'
                 )),
         ];
     }

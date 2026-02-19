@@ -26,6 +26,7 @@ class ItemsExport implements FromQuery, ShouldAutoSize, WithColumnWidths, WithHe
     }
 
     protected $filters;
+
     protected string $sheetTitle;
 
     public function __construct(array $filters = [], string $sheetTitle = 'Items')

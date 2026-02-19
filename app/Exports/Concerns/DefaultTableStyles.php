@@ -2,10 +2,10 @@
 
 namespace App\Exports\Concerns;
 
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 trait DefaultTableStyles
 {
@@ -21,9 +21,9 @@ trait DefaultTableStyles
         // 1. Get highest column and row to define the range
         $highestColumn = $sheet->getHighestColumn();
         $highestRow = $sheet->getHighestRow();
-        $range = 'A1:' . $highestColumn . $highestRow;
-        $headerRange = 'A1:' . $highestColumn . '1';
-        $bodyRange = $highestRow > 1 ? 'A2:' . $highestColumn . $highestRow : null;
+        $range = 'A1:'.$highestColumn.$highestRow;
+        $headerRange = 'A1:'.$highestColumn.'1';
+        $bodyRange = $highestRow > 1 ? 'A2:'.$highestColumn.$highestRow : null;
 
         // Enable AutoFilter
         $sheet->setAutoFilter($range);
@@ -100,7 +100,7 @@ trait DefaultTableStyles
             // Zebra rows for a cleaner "premium" table feel.
             for ($row = 2; $row <= $highestRow; $row++) {
                 if ($row % 2 === 0) {
-                    $sheet->getStyle('A' . $row . ':' . $highestColumn . $row)->applyFromArray($stripeStyle);
+                    $sheet->getStyle('A'.$row.':'.$highestColumn.$row)->applyFromArray($stripeStyle);
                 }
             }
         }

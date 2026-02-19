@@ -18,14 +18,14 @@ class AuditReportExport implements WithMultipleSheets
                 filters: ['disponibilidad_not' => Disponibilidad::EN_USO],
                 sheetTitle: 'Items en no uso'
             ),
-            new SedesExport(),
-            new UbicacionesExport(),
-            new ArticulosExport(),
-            new ResponsablesExport(),
-            new PorUbicacionExport(),
-            new PorResponsableExport(),
-            new ConsolidadoArticulosExport(),
-            new EnviosInventarioExport(),
+            new SedesExport,
+            new UbicacionesExport,
+            new ArticulosExport,
+            new ResponsablesExport,
+            new PorUbicacionExport,
+            new PorResponsableExport,
+            new ConsolidadoArticulosExport,
+            new EnviosInventarioExport,
         ];
     }
 }

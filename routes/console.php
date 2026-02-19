@@ -16,6 +16,7 @@ Artisan::command('user:reset-password {email} {--password=} {--generate}', funct
 
     if (! $user) {
         $this->error("No existe un usuario con el correo: {$email}");
+
         return self::FAILURE;
     }
 
@@ -24,6 +25,7 @@ Artisan::command('user:reset-password {email} {--password=} {--generate}', funct
 
     if ($passwordOption && $useGeneratedPassword) {
         $this->error('Usa solo una opción: --password o --generate.');
+
         return self::FAILURE;
     }
 
@@ -38,12 +40,14 @@ Artisan::command('user:reset-password {email} {--password=} {--generate}', funct
 
         if ($newPassword !== $confirmPassword) {
             $this->error('Las contraseñas no coinciden.');
+
             return self::FAILURE;
         }
     }
 
     if (mb_strlen($newPassword) < 8) {
         $this->error('La contraseña debe tener al menos 8 caracteres.');
+
         return self::FAILURE;
     }
 

@@ -7,7 +7,6 @@ use App\Exports\Ubicacion\UbicacionIndividualExport;
 use App\Mail\InventarioReportMail;
 use App\Models\Responsable;
 use App\Models\Ubicacion;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -21,18 +20,18 @@ class ReportesExcelController extends Controller
     public function ubicacion(int $ubicacionId)
     {
         $ubicacion = Ubicacion::findOrFail($ubicacionId);
-        
-        $filename = 'Inventario_' . $ubicacion->codigo . '_' . date('Y-m-d') . '.xlsx';
-        
+
+        $filename = 'Inventario_'.$ubicacion->codigo.'_'.date('Y-m-d').'.xlsx';
+
         return Excel::download(new UbicacionIndividualExport($ubicacionId), $filename);
     }
 
     public function responsable(int $responsableId)
     {
         $responsable = Responsable::findOrFail($responsableId);
-        
-        $filename = 'Inventario_' . str_replace(' ', '_', $responsable->nombre_completo) . '_' . date('Y-m-d') . '.xlsx';
-        
+
+        $filename = 'Inventario_'.str_replace(' ', '_', $responsable->nombre_completo).'_'.date('Y-m-d').'.xlsx';
+
         return Excel::download(new ResponsableIndividualExport($responsableId), $filename);
     }
 
@@ -42,32 +41,32 @@ class ReportesExcelController extends Controller
     public function enviarResponsable(int $responsableId)
     {
         $responsable = Responsable::find($responsableId);
-        
-        if (!$responsable) {
+
+        if (! $responsable) {
             return response()->json([
                 'success' => false,
-                'message' => 'Responsable no encontrado'
+                'message' => 'Responsable no encontrado',
             ], 404);
         }
-        
-        if (!$responsable->email) {
+
+        if (! $responsable->email) {
             return response()->json([
                 'success' => false,
-                'message' => "El responsable {$responsable->nombre_completo} no tiene email registrado"
+                'message' => "El responsable {$responsable->nombre_completo} no tiene email registrado",
             ], 422);
         }
-        
+
         // Generate Excel to temporary file
-        $filename = 'Inventario_' . str_replace(' ', '_', $responsable->nombre_completo) . '_' . date('Y-m-d') . '.xlsx';
-        
+        $filename = 'Inventario_'.str_replace(' ', '_', $responsable->nombre_completo).'_'.date('Y-m-d').'.xlsx';
+
         $localDisk = Storage::disk('local');
-        if (!$localDisk->exists('temp')) {
+        if (! $localDisk->exists('temp')) {
             $localDisk->makeDirectory('temp');
         }
-        
-        Excel::store(new ResponsableIndividualExport($responsableId), 'temp/' . $filename, 'local');
-        $tempPath = $localDisk->path('temp/' . $filename);
-        
+
+        Excel::store(new ResponsableIndividualExport($responsableId), 'temp/'.$filename, 'local');
+        $tempPath = $localDisk->path('temp/'.$filename);
+
         try {
             Mail::to($responsable->email)
                 ->send(new InventarioReportMail(
@@ -77,13 +76,13 @@ class ReportesExcelController extends Controller
                     archivoPath: $tempPath,
                     archivoNombre: $filename
                 ));
-            
+
             // Clean up temp file
             @unlink($tempPath);
-            
+
             return response()->json([
                 'success' => true,
-                'message' => "Reporte enviado exitosamente a {$responsable->email}"
+                'message' => "Reporte enviado exitosamente a {$responsable->email}",
             ]);
         } catch (\Exception $e) {
             // Clean up temp file on error
@@ -93,10 +92,10 @@ class ReportesExcelController extends Controller
                 'email' => $responsable->email,
                 'error' => $e->getMessage(),
             ]);
-            
+
             return response()->json([
                 'success' => false,
-                'message' => 'Error al enviar el correo: ' . $e->getMessage()
+                'message' => 'Error al enviar el correo: '.$e->getMessage(),
             ], 500);
         }
     }

@@ -13,14 +13,14 @@ enum TipoUbicacion: string implements HasLabel
     case DEPOSITO = 'deposito';
     case AUDITORIO = 'auditorio';
     case SALON_MULTIPLE = 'salon_multiple';
-    
+
     // Nuevos valores detectados en Excel
     case UNIDAD_SANITARIA = 'unidad_sanitaria';
     case CUARTO_UTIL = 'cuarto_util';
     case SALA = 'sala';
     case INFRAESTRUCTURA = 'infraestructura';
     case APOYO_OPERATIVO = 'apoyo_operativo';
-    
+
     case OTRO = 'otro';
 
     public function getLabel(): ?string

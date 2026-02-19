@@ -2,7 +2,6 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
 class InventoryExport implements WithMultipleSheets
@@ -18,11 +17,11 @@ class InventoryExport implements WithMultipleSheets
     {
         return [
             new ItemsExport($this->filters),
-            new SedesExport(),
-            new UbicacionesExport(),
-            new ArticulosExport(),
-            new ResponsablesExport(),
-            new EnviosInventarioExport(),
+            new SedesExport,
+            new UbicacionesExport,
+            new ArticulosExport,
+            new ResponsablesExport,
+            new EnviosInventarioExport,
         ];
     }
 }

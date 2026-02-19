@@ -14,20 +14,27 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ResumenUbicacionSheet implements FromArray, WithTitle, WithStyles, WithColumnWidths
+class ResumenUbicacionSheet implements FromArray, WithColumnWidths, WithStyles, WithTitle
 {
     protected int $ubicacionId;
+
     protected string $title;
+
     /** @var array<string,string> */
     protected array $meta;
+
     protected int $tableDataStartRow = 10;
+
     protected int $tableDataEndRow = 10;
+
     protected int $observacionesTitleRow = 0;
+
     protected int $observacionesBodyRow = 0;
+
     protected string $observacionesText = '';
 
     /**
-     * @param array<string,string> $meta
+     * @param  array<string,string>  $meta
      */
     public function __construct(int $ubicacionId, string $title, array $meta = [])
     {
@@ -63,9 +70,9 @@ class ResumenUbicacionSheet implements FromArray, WithTitle, WithStyles, WithCol
                 $ubicacion?->sede?->nombre ?? '-',
                 $ubicacion?->responsable?->nombre_completo ?? 'Sin responsable',
                 now()->format('Y-m-d H:i'),
-                !empty($this->meta['codigo_envio']) ? ' | Envío: ' : '',
+                ! empty($this->meta['codigo_envio']) ? ' | Envío: ' : '',
                 $this->meta['codigo_envio'] ?? '',
-                !empty($this->meta['firmante_responsable']) ? ' | Firma: ' . $this->meta['firmante_responsable'] : ''
+                ! empty($this->meta['firmante_responsable']) ? ' | Firma: '.$this->meta['firmante_responsable'] : ''
             ),
         ];
         $rows[] = [''];

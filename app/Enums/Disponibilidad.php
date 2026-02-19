@@ -2,10 +2,10 @@
 
 namespace App\Enums;
 
-use Filament\Support\Contracts\HasLabel;
 use Filament\Support\Contracts\HasColor;
+use Filament\Support\Contracts\HasLabel;
 
-enum Disponibilidad: string implements HasLabel, HasColor
+enum Disponibilidad: string implements HasColor, HasLabel
 {
     case EN_USO = 'en_uso';
     case EN_REPARACION = 'en_reparacion';

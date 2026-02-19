@@ -3,15 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ItemResource\Pages;
-use App\Filament\Resources\ItemResource\RelationManagers;
 use App\Models\Item;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ItemResource extends Resource
 {
@@ -175,7 +172,7 @@ class ItemResource extends Resource
                                             ->when($get('sede_filtro_id'), fn ($q, $sedeId) => $q->where('sede_id', $sedeId))
                                             ->orderBy('codigo')
                                             ->get()
-                                            ->mapWithKeys(fn ($ubi) => [$ubi->id => $ubi->codigo . ' - ' . $ubi->nombre]))
+                                            ->mapWithKeys(fn ($ubi) => [$ubi->id => $ubi->codigo.' - '.$ubi->nombre]))
                                         ->searchable()
                                         ->required(fn (Forms\Get $get): bool => (bool) $get('actualizar_ubicacion'))
                                         ->visible(fn (Forms\Get $get): bool => (bool) $get('actualizar_ubicacion')),
@@ -273,10 +270,10 @@ class ItemResource extends Resource
                         ->action(function (\Illuminate\Support\Collection $records, array $data): void {
                             $updates = [];
 
-                            if (($data['actualizar_ubicacion'] ?? false) && !empty($data['ubicacion_id'])) {
+                            if (($data['actualizar_ubicacion'] ?? false) && ! empty($data['ubicacion_id'])) {
                                 $ubicacion = \App\Models\Ubicacion::find($data['ubicacion_id']);
 
-                                if (!$ubicacion) {
+                                if (! $ubicacion) {
                                     \Filament\Notifications\Notification::make()
                                         ->title('Ubicación no válida')
                                         ->danger()
@@ -359,7 +356,7 @@ class ItemResource extends Resource
 
                             \Filament\Notifications\Notification::make()
                                 ->title('Edición masiva completada')
-                                ->body(count($records) . ' ítem(s) actualizado(s).')
+                                ->body(count($records).' ítem(s) actualizado(s).')
                                 ->success()
                                 ->send();
                         })
@@ -377,10 +374,9 @@ class ItemResource extends Resource
                                 ->afterStateUpdated(fn (Forms\Set $set) => $set('ubicacion_id', null)),
                             Forms\Components\Select::make('ubicacion_id')
                                 ->label('Nueva Ubicación')
-                                ->options(fn (Forms\Get $get) => 
-                                    \App\Models\Ubicacion::where('sede_id', $get('sede_id'))
-                                        ->get()
-                                        ->mapWithKeys(fn ($ubi) => [$ubi->id => $ubi->codigo . ' - ' . $ubi->nombre])
+                                ->options(fn (Forms\Get $get) => \App\Models\Ubicacion::where('sede_id', $get('sede_id'))
+                                    ->get()
+                                    ->mapWithKeys(fn ($ubi) => [$ubi->id => $ubi->codigo.' - '.$ubi->nombre])
                                 )
                                 ->required()
                                 ->searchable(),
@@ -391,21 +387,21 @@ class ItemResource extends Resource
                         ])
                         ->action(function (\Illuminate\Support\Collection $records, array $data) {
                             $ubicacion = \App\Models\Ubicacion::find($data['ubicacion_id']);
-                            
+
                             $updateData = [
                                 'sede_id' => $data['sede_id'],
                                 'ubicacion_id' => $data['ubicacion_id'],
                             ];
-                            
+
                             if ($data['asignar_responsable'] && $ubicacion?->responsable_id) {
                                 $updateData['responsable_id'] = $ubicacion->responsable_id;
                             }
-                            
+
                             $records->each(fn ($item) => $item->update($updateData));
-                            
+
                             \Filament\Notifications\Notification::make()
                                 ->title('Ubicación actualizada')
-                                ->body(count($records) . ' ítem(s) movido(s) a ' . $ubicacion->nombre)
+                                ->body(count($records).' ítem(s) movido(s) a '.$ubicacion->nombre)
                                 ->success()
                                 ->send();
                         })

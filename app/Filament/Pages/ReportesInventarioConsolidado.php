@@ -14,4 +14,3 @@ class ReportesInventarioConsolidado extends ReportesInventario
 
     protected static ?int $navigationSort = 22;
 }
-

@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
 
 class EnvioInventario extends Model
 {
+    use HasFactory;
+
     protected $table = 'envios_inventario';
 
     protected $appends = [
@@ -60,6 +63,6 @@ class EnvioInventario extends Model
 
     public function getCodigoEnvioAttribute(): string
     {
-        return 'ENV-' . str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+        return 'ENV-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 }

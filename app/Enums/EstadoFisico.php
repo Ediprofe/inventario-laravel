@@ -2,10 +2,10 @@
 
 namespace App\Enums;
 
-use Filament\Support\Contracts\HasLabel;
 use Filament\Support\Contracts\HasColor;
+use Filament\Support\Contracts\HasLabel;
 
-enum EstadoFisico: string implements HasLabel, HasColor
+enum EstadoFisico: string implements HasColor, HasLabel
 {
     case BUENO = 'bueno';
     case REGULAR = 'regular';

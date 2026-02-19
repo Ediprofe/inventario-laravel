@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Responsable extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'nombre',
         'apellido',
@@ -29,7 +32,7 @@ class Responsable extends Model
 
     // 'nombre_completo' is virtual in DB (generated column), but we can access it.
     // However, Laravel doesn't fill generated columns.
-    
+
     public function sede(): BelongsTo
     {
         return $this->belongsTo(Sede::class);
@@ -39,12 +42,12 @@ class Responsable extends Model
     {
         return $this->hasMany(Item::class);
     }
-    
+
     public function ubicacionesACargo(): HasMany
     {
         return $this->hasMany(Ubicacion::class, 'responsable_id');
     }
-    
+
     public function sedesCoordinadas(): HasMany
     {
         return $this->hasMany(Sede::class, 'coordinador_id');
@@ -53,7 +56,7 @@ class Responsable extends Model
     protected static function booted(): void
     {
         static::saved(function (Responsable $responsable) {
-            if (!$responsable->es_firmante_entrega) {
+            if (! $responsable->es_firmante_entrega) {
                 return;
             }
 

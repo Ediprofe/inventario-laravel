@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreignId('sede_id')->nullable()->constrained()->nullOnDelete();
             $table->boolean('activo')->default(true);
             $table->timestamps();
-            
+
             // Unique constraints for deduplication logic
             $table->unique('email');
             $table->unique(['tipo_documento', 'documento']);

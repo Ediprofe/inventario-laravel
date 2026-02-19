@@ -48,7 +48,7 @@ class Item extends Model
     {
         return $this->belongsTo(Responsable::class);
     }
-    
+
     public function historialMovimientos(): HasMany
     {
         return $this->hasMany(HistorialMovimiento::class);

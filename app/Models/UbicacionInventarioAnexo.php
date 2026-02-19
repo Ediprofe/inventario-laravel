@@ -31,4 +31,3 @@ class UbicacionInventarioAnexo extends Model
         return $this->belongsTo(Ubicacion::class);
     }
 }
-

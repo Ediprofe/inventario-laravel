@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resources\EnvioInventarioResource\Pages;
 use App\Models\EnvioInventario;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use App\Filament\Resources\EnvioInventarioResource\Pages;
 
 class EnvioInventarioResource extends Resource
 {
@@ -67,7 +67,7 @@ class EnvioInventarioResource extends Resource
                     ->icon(fn ($state) => $state ? 'heroicon-o-check-circle' : 'heroicon-o-clock')
                     ->color(fn ($state) => $state ? 'success' : 'warning')
                     ->tooltip(fn ($record) => $record->estaAprobado()
-                        ? 'Firmado el ' . $record->aprobado_at->format('d/m/Y H:i')
+                        ? 'Firmado el '.$record->aprobado_at->format('d/m/Y H:i')
                         : 'Pendiente de firma'),
                 Tables\Columns\TextColumn::make('aprobado_at')
                     ->label('Aprobado')

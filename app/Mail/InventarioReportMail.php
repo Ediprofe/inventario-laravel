@@ -14,16 +14,25 @@ class InventarioReportMail extends Mailable
     use Queueable, SerializesModels;
 
     public string $destinatario;
+
     public string $tipoReporte;
+
     public string $nombreReporte;
+
     public ?string $urlAprobacion;
+
     public ?string $codigoEnvio;
+
     public ?string $firmanteNombre;
+
     public ?string $firmaResponsableBase64;
+
     public ?string $firmaEntregaNombre;
+
     public ?string $firmaEntregaCargo;
+
     public ?string $firmaEntregaBase64;
-    
+
     /** @var array<array{path: string, name: string}> */
     protected array $archivos;
 

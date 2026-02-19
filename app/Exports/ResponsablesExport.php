@@ -2,19 +2,19 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\DefaultTableStyles;
 use App\Models\Responsable;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
-use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use App\Exports\Concerns\DefaultTableStyles;
-
-class ResponsablesExport implements FromCollection, WithHeadings, WithMapping, WithTitle, WithStyles, ShouldAutoSize
+class ResponsablesExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     use DefaultTableStyles;
+
     public function collection()
     {
         return Responsable::with('sede')->get();
@@ -36,7 +36,7 @@ class ResponsablesExport implements FromCollection, WithHeadings, WithMapping, W
     public function map($responsable): array
     {
         return [
-            $responsable->nombre_completo ?? ($responsable->nombre . ' ' . $responsable->apellido),
+            $responsable->nombre_completo ?? ($responsable->nombre.' '.$responsable->apellido),
             $responsable->tipo_documento,
             $responsable->documento,
             $responsable->cargo,

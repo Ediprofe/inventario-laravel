@@ -2,16 +2,15 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\DefaultTableStyles;
+use App\Models\Item;
 use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use App\Models\Item;
-use App\Exports\Concerns\DefaultTableStyles;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithTitle;
 
-class PorUbicacionExport implements FromArray, WithTitle, WithStyles, ShouldAutoSize, WithHeadings
+class PorUbicacionExport implements FromArray, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
 {
     use DefaultTableStyles;
 

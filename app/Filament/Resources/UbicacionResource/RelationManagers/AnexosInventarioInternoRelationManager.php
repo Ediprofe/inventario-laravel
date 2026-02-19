@@ -101,7 +101,7 @@ class AnexosInventarioInternoRelationManager extends RelationManager
     protected function resolveUbicacionResponsable(): ?string
     {
         $owner = $this->getOwnerRecord();
-        if (!$owner instanceof Model || !method_exists($owner, 'responsable')) {
+        if (! $owner instanceof Model || ! method_exists($owner, 'responsable')) {
             return null;
         }
 

@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\ItemResource\Pages;
 
 use App\Filament\Resources\ItemResource;
-use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateItem extends CreateRecord
@@ -22,7 +21,7 @@ class CreateItem extends CreateRecord
 
         $prefill = array_filter($prefill, fn ($value) => $value !== null);
 
-        if (!empty($prefill)) {
+        if (! empty($prefill)) {
             $this->form->fill($prefill);
         }
     }

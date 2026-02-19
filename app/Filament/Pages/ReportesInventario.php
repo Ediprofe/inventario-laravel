@@ -2,24 +2,23 @@
 
 namespace App\Filament\Pages;
 
-use Filament\Pages\Page;
+use App\Enums\Disponibilidad;
+use App\Enums\EstadoFisico;
+use App\Filament\Resources\ItemResource;
+use App\Models\Articulo;
+use App\Models\Item;
+use App\Models\Responsable;
 use App\Models\Sede;
 use App\Models\Ubicacion;
-use App\Models\Responsable;
-use App\Models\Item;
-use App\Models\Articulo;
-use App\Enums\EstadoFisico;
-use App\Enums\Disponibilidad;
-use App\Filament\Resources\ItemResource;
-use Illuminate\Support\Collection;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
+use Filament\Pages\Page;
+use Filament\Tables;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
-use Filament\Tables;
-use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Url;
@@ -106,12 +105,12 @@ class ReportesInventario extends Page implements HasForms, HasTable
                 Tables\Actions\Action::make('edit')
                     ->label('Editar')
                     ->icon('heroicon-o-pencil')
-                    ->url(fn ($record) => '/admin/items/' . $record->getKey() . '/edit?return_to=' . urlencode($this->getContextUrl())),
+                    ->url(fn ($record) => '/admin/items/'.$record->getKey().'/edit?return_to='.urlencode($this->getContextUrl())),
             ])
             ->columns(
                 collect($table->getColumns())
                     ->map(function ($column) {
-                        if (!method_exists($column, 'getName')) {
+                        if (! method_exists($column, 'getName')) {
                             return $column;
                         }
 
@@ -140,15 +139,21 @@ class ReportesInventario extends Page implements HasForms, HasTable
                     ->options(\App\Enums\Disponibilidad::class),
             ]);
     }
+
     protected static ?string $navigationIcon = 'heroicon-o-chart-bar';
+
     protected static ?string $navigationLabel = 'Inventario por Ubicación';
+
     protected static ?string $title = 'Inventario por Ubicación';
+
     protected static ?string $slug = 'reportes-inventario';
+
     protected static ?int $navigationSort = 20;
 
     protected static string $view = 'filament.pages.reportes-inventario';
 
     protected string $defaultTab = 'ubicacion';
+
     public bool $showTabNavigation = false;
 
     // Current mode
@@ -157,9 +162,10 @@ class ReportesInventario extends Page implements HasForms, HasTable
     // Filters - Ubicacion
     #[Url(as: 'sede', history: true)]
     public ?int $sedeId = null;
+
     #[Url(as: 'ubicacion', history: true)]
     public ?int $ubicacionId = null;
-    
+
     // Filters - Responsable
     #[Url(as: 'responsable', history: true)]
     public ?int $responsableFilterId = null;
@@ -170,28 +176,42 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     // Quick filters - Detalle por ubicación
     public ?int $detalleArticuloId = null;
+
     public ?string $detalleEstado = null;
+
     public ?string $detalleDisponibilidad = Disponibilidad::EN_USO->value;
+
     public ?string $ubicacionObservaciones = null;
 
     // Quick filters - Detalle por responsable
     public ?int $detalleResponsableArticuloId = null;
+
     public ?int $detalleResponsableUbicacionId = null;
+
     public ?string $detalleResponsableEstado = null;
+
     public ?string $detalleResponsableDisponibilidad = Disponibilidad::EN_USO->value;
 
     // Quick filters - Detalle consolidado
     public ?int $detalleConsolidadoArticuloId = null;
+
     public ?int $detalleConsolidadoSedeId = null;
+
     public ?string $detalleConsolidadoEstado = null;
+
     public ?string $detalleConsolidadoDisponibilidad = Disponibilidad::EN_USO->value;
 
     // Email Modal Properties
     public bool $showEmailModal = false;
+
     public string $emailModalType = ''; // 'ubicacion' or 'responsable'
+
     public ?string $emailDestinatario = null;
+
     public ?string $emailAddress = null;
+
     public ?int $emailTargetId = null;
+
     public bool $emailSending = false;
 
     public function mount()
@@ -213,19 +233,19 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     protected function restoreUbicacionFilters(): void
     {
-        if (!$this->sedeId) {
+        if (! $this->sedeId) {
             $this->sedeId = Session::get('reportes.ubicacion.sede_id');
         }
 
-        if (!$this->ubicacionId) {
+        if (! $this->ubicacionId) {
             $this->ubicacionId = Session::get('reportes.ubicacion.ubicacion_id');
         }
 
-        if (!$this->sedeId) {
+        if (! $this->sedeId) {
             $this->sedeId = Sede::query()->value('id');
         }
 
-        if ($this->sedeId && (!$this->ubicacionId || !Ubicacion::where('id', $this->ubicacionId)->where('sede_id', $this->sedeId)->exists())) {
+        if ($this->sedeId && (! $this->ubicacionId || ! Ubicacion::where('id', $this->ubicacionId)->where('sede_id', $this->sedeId)->exists())) {
             $this->ubicacionId = Ubicacion::where('sede_id', $this->sedeId)->value('id');
         }
 
@@ -235,14 +255,14 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     protected function restoreResponsableFilter(): void
     {
-        if (!$this->responsableFilterId) {
+        if (! $this->responsableFilterId) {
             $this->responsableFilterId = Session::get('reportes.responsable.id');
         }
     }
 
     protected function restoreConsolidadoFilter(): void
     {
-        if (!$this->articuloFilterId) {
+        if (! $this->articuloFilterId) {
             $this->articuloFilterId = Session::get('reportes.consolidado.articulo_id');
         }
     }
@@ -257,7 +277,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
     {
         $this->sedeId = $value ? (int) $value : null;
 
-        if ($this->sedeId && (!$this->ubicacionId || !Ubicacion::where('id', $this->ubicacionId)->where('sede_id', $this->sedeId)->exists())) {
+        if ($this->sedeId && (! $this->ubicacionId || ! Ubicacion::where('id', $this->ubicacionId)->where('sede_id', $this->sedeId)->exists())) {
             $this->ubicacionId = Ubicacion::where('sede_id', $this->sedeId)->value('id');
         }
 
@@ -297,7 +317,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     public function getUbicacionesForSedeProperty()
     {
-        if (!$this->sedeId) {
+        if (! $this->sedeId) {
             return collect();
         }
 
@@ -306,7 +326,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     public function getCanGoPreviousUbicacionProperty(): bool
     {
-        if (!$this->ubicacionId) {
+        if (! $this->ubicacionId) {
             return false;
         }
 
@@ -318,7 +338,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     public function getCanGoNextUbicacionProperty(): bool
     {
-        if (!$this->ubicacionId) {
+        if (! $this->ubicacionId) {
             return false;
         }
 
@@ -358,7 +378,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     protected function syncUbicacionObservacionesDraft(): void
     {
-        if (!$this->ubicacionId) {
+        if (! $this->ubicacionId) {
             $this->ubicacionObservaciones = null;
 
             return;
@@ -371,7 +391,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     public function saveUbicacionObservaciones(): void
     {
-        if (!$this->ubicacionId) {
+        if (! $this->ubicacionId) {
             Notification::make()
                 ->title('Seleccione una ubicación')
                 ->warning()
@@ -386,7 +406,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
         $ubicacion = Ubicacion::find($this->ubicacionId);
 
-        if (!$ubicacion) {
+        if (! $ubicacion) {
             Notification::make()
                 ->title('Ubicación no encontrada')
                 ->danger()
@@ -413,7 +433,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
     {
         return Responsable::orderBy('nombre')->get();
     }
-    
+
     public function getArticulosOptionsProperty()
     {
         return Articulo::orderBy('nombre')->pluck('nombre', 'id');
@@ -423,13 +443,18 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     public function getCurrentUbicacionProperty()
     {
-        if (!$this->ubicacionId) return null;
+        if (! $this->ubicacionId) {
+            return null;
+        }
+
         return Ubicacion::with('responsable', 'sede')->find($this->ubicacionId);
     }
 
     public function getItemsPorUbicacionProperty()
     {
-        if (!$this->ubicacionId) return [];
+        if (! $this->ubicacionId) {
+            return [];
+        }
 
         $items = Item::query()
             ->where('ubicacion_id', $this->ubicacionId)
@@ -508,7 +533,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     public function getDetalleArticuloSeleccionadoProperty(): ?Articulo
     {
-        if (!$this->detalleArticuloId) {
+        if (! $this->detalleArticuloId) {
             return null;
         }
 
@@ -517,7 +542,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     public function getDetalleEstadoSeleccionadoLabelProperty(): ?string
     {
-        if (!$this->detalleEstado) {
+        if (! $this->detalleEstado) {
             return null;
         }
 
@@ -526,7 +551,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     public function getDetalleDisponibilidadSeleccionadaLabelProperty(): ?string
     {
-        if (!$this->detalleDisponibilidad) {
+        if (! $this->detalleDisponibilidad) {
             return null;
         }
 
@@ -537,14 +562,19 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     public function getCurrentResponsableProperty()
     {
-        if (!$this->responsableFilterId) return null;
+        if (! $this->responsableFilterId) {
+            return null;
+        }
+
         return Responsable::find($this->responsableFilterId);
     }
 
     public function getItemsPorResponsableProperty()
     {
-        if (!$this->responsableFilterId) return [];
-        
+        if (! $this->responsableFilterId) {
+            return [];
+        }
+
         // Resumen: Cód. Ubicación | Ubicación | Artículo | Cantidad + desglose por estado/disponibilidad
         $rawData = Item::query()
             ->where('responsable_id', $this->responsableFilterId)
@@ -555,7 +585,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
             ->get();
 
         return $rawData
-            ->groupBy(fn ($row) => $row->articulo_id . '_' . $row->ubicacion_id)
+            ->groupBy(fn ($row) => $row->articulo_id.'_'.$row->ubicacion_id)
             ->map(function ($items) {
                 $first = $items->first();
 
@@ -654,49 +684,49 @@ class ReportesInventario extends Page implements HasForms, HasTable
     }
 
     // --- Tab 3: Matrix (Consolidado) ---
-    
+
     public function getMatrixDataProperty()
     {
         // Rows: Articulos
         // Cols: Sedes
         // Content: Breakdown by Estado
-        
+
         $sedes = Sede::all();
-        
+
         $articulosQuery = Articulo::orderBy('nombre');
         if ($this->articuloFilterId) {
             $articulosQuery->where('id', $this->articuloFilterId);
         }
         $articulos = $articulosQuery->get();
-        
+
         // Optimization: Fetch aggregated data in one query
         $query = Item::query();
-        
+
         // If sorting by article, we can also optimize the item query to only fetch relevant items
         if ($this->articuloFilterId) {
             $query->where('articulo_id', $this->articuloFilterId);
         }
-        
+
         $rawData = $query->selectRaw('articulo_id, sede_id, estado, disponibilidad, count(*) as total')
             ->groupBy('articulo_id', 'sede_id', 'estado', 'disponibilidad')
             ->get();
-            
+
         // Build the matrix structure
         $matrix = [];
-        
+
         foreach ($articulos as $art) {
             $row = [
                 'id' => $art->id,
                 'nombre' => $art->nombre,
                 'total_row' => 0,
-                'sedes' => []
+                'sedes' => [],
             ];
-            
+
             foreach ($sedes as $sede) {
                 // Find data for this cell
                 $cellData = $rawData->where('articulo_id', $art->id)->where('sede_id', $sede->id);
                 $cellTotal = $cellData->sum('total');
-                
+
                 $breakdown = [];
                 foreach (EstadoFisico::cases() as $estado) {
                     $qty = $cellData->where('estado', $estado)->sum('total');
@@ -705,7 +735,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
                             'value' => $estado->value,
                             'label' => $estado->getLabel(),
                             'color' => $this->getColorForEstado($estado),
-                            'qty' => $qty
+                            'qty' => $qty,
                         ];
                     }
                 }
@@ -722,7 +752,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
                         ];
                     }
                 }
-                
+
                 $row['sedes'][$sede->id] = [
                     'total' => $cellTotal,
                     'breakdown' => $breakdown,
@@ -730,17 +760,17 @@ class ReportesInventario extends Page implements HasForms, HasTable
                 ];
                 $row['total_row'] += $cellTotal;
             }
-            
+
             // Only add rows that have items? Or display all? Display all is safer for inventory check.
             // Let's filter out empty rows to keep it clean if user wants summary.
             if ($row['total_row'] > 0) {
-                 $matrix[] = $row;
+                $matrix[] = $row;
             }
         }
-        
+
         return [
             'sedes' => $sedes,
-            'rows' => $matrix
+            'rows' => $matrix,
         ];
     }
 
@@ -802,7 +832,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
             'return_to' => $this->getContextUrl(),
         ];
 
-        return '/admin/items/create?' . http_build_query(array_filter($query, fn ($value) => $value !== null && $value !== ''));
+        return '/admin/items/create?'.http_build_query(array_filter($query, fn ($value) => $value !== null && $value !== ''));
     }
 
     public function getBatchItemsUrlProperty(): string
@@ -815,7 +845,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
             'return_to' => $this->getContextUrl(),
         ];
 
-        return '/admin/items?' . http_build_query(array_filter($query, fn ($value) => $value !== null && $value !== ''));
+        return '/admin/items?'.http_build_query(array_filter($query, fn ($value) => $value !== null && $value !== ''));
     }
 
     public function getCreateItemUrlResponsableProperty(): string
@@ -825,7 +855,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
             'return_to' => $this->getContextUrl(),
         ];
 
-        return '/admin/items/create?' . http_build_query(array_filter($query, fn ($value) => $value !== null && $value !== ''));
+        return '/admin/items/create?'.http_build_query(array_filter($query, fn ($value) => $value !== null && $value !== ''));
     }
 
     public function getBatchItemsUrlResponsableProperty(): string
@@ -836,7 +866,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
             'return_to' => $this->getContextUrl(),
         ];
 
-        return '/admin/items?' . http_build_query(array_filter($query, fn ($value) => $value !== null && $value !== ''));
+        return '/admin/items?'.http_build_query(array_filter($query, fn ($value) => $value !== null && $value !== ''));
     }
 
     protected function getContextUrl(): string
@@ -859,9 +889,9 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
         $query = array_filter($query, fn ($value) => $value !== null && $value !== '');
 
-        return '/' . $basePath . (empty($query) ? '' : '?' . http_build_query($query));
+        return '/'.$basePath.(empty($query) ? '' : '?'.http_build_query($query));
     }
-    
+
     protected function getColorForEstado(EstadoFisico $estado): string
     {
         return match ($estado) {
@@ -887,31 +917,34 @@ class ReportesInventario extends Page implements HasForms, HasTable
     public function openEmailModalUbicacion(): void
     {
         $ubicacion = $this->currentUbicacion;
-        
-        if (!$ubicacion) {
+
+        if (! $ubicacion) {
             Notification::make()
                 ->title('Error')
                 ->body('Seleccione una ubicación primero')
                 ->danger()
                 ->send();
+
             return;
         }
 
-        if (!$ubicacion->responsable) {
+        if (! $ubicacion->responsable) {
             Notification::make()
                 ->title('Sin responsable')
                 ->body('Esta ubicación no tiene un responsable asignado')
                 ->warning()
                 ->send();
+
             return;
         }
 
-        if (!$ubicacion->responsable->email) {
+        if (! $ubicacion->responsable->email) {
             Notification::make()
                 ->title('Email no registrado')
                 ->body("El responsable {$ubicacion->responsable->nombre_completo} no tiene email registrado")
                 ->warning()
                 ->send();
+
             return;
         }
 
@@ -925,22 +958,24 @@ class ReportesInventario extends Page implements HasForms, HasTable
     public function openEmailModalResponsable(): void
     {
         $responsable = $this->currentResponsable;
-        
-        if (!$responsable) {
+
+        if (! $responsable) {
             Notification::make()
                 ->title('Error')
                 ->body('Seleccione un responsable primero')
                 ->danger()
                 ->send();
+
             return;
         }
 
-        if (!$responsable->email) {
+        if (! $responsable->email) {
             Notification::make()
                 ->title('Email no registrado')
                 ->body("El responsable {$responsable->nombre_completo} no tiene email registrado")
                 ->warning()
                 ->send();
+
             return;
         }
 
@@ -989,7 +1024,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
         } catch (\Exception $e) {
             Notification::make()
                 ->title('Error')
-                ->body('Error de conexión: ' . $e->getMessage())
+                ->body('Error de conexión: '.$e->getMessage())
                 ->danger()
                 ->send();
         } finally {

@@ -14,13 +14,13 @@ use RuntimeException;
 class ReportesPdfController extends Controller
 {
     protected InventarioReportService $reportService;
+
     protected InventarioFirmaEnvioService $firmaEnvioService;
 
     public function __construct(
         InventarioReportService $reportService,
         InventarioFirmaEnvioService $firmaEnvioService,
-    )
-    {
+    ) {
         $this->reportService = $reportService;
         $this->firmaEnvioService = $firmaEnvioService;
     }
@@ -31,17 +31,17 @@ class ReportesPdfController extends Controller
     public function ubicacion(int $ubicacionId)
     {
         $data = $this->reportService->getInventarioPorUbicacion($ubicacionId);
-        
-        if (!$data['ubicacion']) {
+
+        if (! $data['ubicacion']) {
             abort(404, 'Ubicación no encontrada');
         }
 
         DompdfRuntimeConfig::apply();
         $pdf = Pdf::loadView('pdf.ubicacion', compact('data'));
-        
-        $nombreReporte = $data['ubicacion']->codigo . ' - ' . $data['ubicacion']->nombre;
-        $filename = 'Inventario_' . str_replace(['/', ' '], '_', $nombreReporte) . '_' . now()->format('Y-m-d') . '.pdf';
-        
+
+        $nombreReporte = $data['ubicacion']->codigo.' - '.$data['ubicacion']->nombre;
+        $filename = 'Inventario_'.str_replace(['/', ' '], '_', $nombreReporte).'_'.now()->format('Y-m-d').'.pdf';
+
         return $pdf->download($filename);
     }
 
@@ -51,17 +51,17 @@ class ReportesPdfController extends Controller
     public function responsable(int $responsableId)
     {
         $data = $this->reportService->getInventarioPorResponsable($responsableId);
-        
-        if (!$data['responsable']) {
+
+        if (! $data['responsable']) {
             abort(404, 'Responsable no encontrado');
         }
 
         DompdfRuntimeConfig::apply();
         $pdf = Pdf::loadView('pdf.responsable', compact('data'));
-        
+
         $nombreLimpio = str_replace(' ', '_', $data['responsable']->nombre_completo);
-        $filename = 'Inventario_' . $nombreLimpio . '_' . now()->format('Y-m-d') . '.pdf';
-        
+        $filename = 'Inventario_'.$nombreLimpio.'_'.now()->format('Y-m-d').'.pdf';
+
         return $pdf->download($filename);
     }
 
@@ -73,7 +73,7 @@ class ReportesPdfController extends Controller
     {
         $ubicacion = Ubicacion::with('responsable')->find($ubicacionId);
 
-        if (!$ubicacion) {
+        if (! $ubicacion) {
             return response()->json(['success' => false, 'message' => 'Ubicación no encontrada'], 404);
         }
 
@@ -84,7 +84,7 @@ class ReportesPdfController extends Controller
                 'success' => true,
                 'message' => 'Enlace de firma generado. Capture la firma en tablet/celular y el correo se enviará automáticamente.',
                 'url_firma' => $this->firmaEnvioService->buildApprovalUrl($envio->token),
-                'ruta_firma' => '/inventario/aprobar/' . $envio->token,
+                'ruta_firma' => '/inventario/aprobar/'.$envio->token,
                 'token' => $envio->token,
                 'codigo_envio' => $envio->codigo_envio,
                 'email_destino' => $envio->email_enviado_a,
@@ -102,7 +102,7 @@ class ReportesPdfController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error al generar enlace de firma: ' . $e->getMessage()
+                'message' => 'Error al generar enlace de firma: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -115,7 +115,7 @@ class ReportesPdfController extends Controller
     {
         $responsable = Responsable::find($responsableId);
 
-        if (!$responsable) {
+        if (! $responsable) {
             return response()->json(['success' => false, 'message' => 'Responsable no encontrado'], 404);
         }
 
@@ -126,7 +126,7 @@ class ReportesPdfController extends Controller
                 'success' => true,
                 'message' => 'Enlace de firma generado. Capture la firma en tablet/celular y el correo se enviará automáticamente.',
                 'url_firma' => $this->firmaEnvioService->buildApprovalUrl($envio->token),
-                'ruta_firma' => '/inventario/aprobar/' . $envio->token,
+                'ruta_firma' => '/inventario/aprobar/'.$envio->token,
                 'token' => $envio->token,
                 'codigo_envio' => $envio->codigo_envio,
                 'email_destino' => $envio->email_enviado_a,
@@ -144,7 +144,7 @@ class ReportesPdfController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error al generar enlace de firma: ' . $e->getMessage()
+                'message' => 'Error al generar enlace de firma: '.$e->getMessage(),
             ], 500);
         }
     }

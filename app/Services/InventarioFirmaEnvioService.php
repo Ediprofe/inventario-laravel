@@ -21,25 +21,24 @@ class InventarioFirmaEnvioService
 {
     public function __construct(
         protected InventarioReportService $reportService,
-    ) {
-    }
+    ) {}
 
     public function buildApprovalUrl(string $token): string
     {
         $baseUrl = rtrim((string) config('app.public_url', config('app.url')), '/');
 
-        return $baseUrl . "/inventario/aprobar/{$token}";
+        return $baseUrl."/inventario/aprobar/{$token}";
     }
 
     public function crearEnvioBorradorPorUbicacion(Ubicacion $ubicacion): EnvioInventario
     {
         $responsable = $ubicacion->responsable;
 
-        if (!$responsable) {
+        if (! $responsable) {
             throw new RuntimeException('Esta ubicación no tiene un responsable asignado.');
         }
 
-        if (!$responsable->email) {
+        if (! $responsable->email) {
             throw new RuntimeException("El responsable {$responsable->nombre_completo} no tiene email registrado.");
         }
 
@@ -55,7 +54,7 @@ class InventarioFirmaEnvioService
 
     public function crearEnvioBorradorPorResponsable(Responsable $responsable): EnvioInventario
     {
-        if (!$responsable->email) {
+        if (! $responsable->email) {
             throw new RuntimeException("El responsable {$responsable->nombre_completo} no tiene email registrado.");
         }
 
@@ -76,12 +75,12 @@ class InventarioFirmaEnvioService
     {
         $envio->loadMissing(['responsable', 'ubicacion.sede']);
 
-        if (!$envio->firmante_nombre || !$envio->firma_base64) {
+        if (! $envio->firmante_nombre || ! $envio->firma_base64) {
             throw new RuntimeException('No es posible enviar: falta la firma del responsable.');
         }
 
         $localDisk = Storage::disk('local');
-        if (!$localDisk->exists('temp')) {
+        if (! $localDisk->exists('temp')) {
             $localDisk->makeDirectory('temp');
         }
 
@@ -90,34 +89,34 @@ class InventarioFirmaEnvioService
         $fecha = now()->format('Y-m-d_His');
 
         if ($envio->tipo === 'por_ubicacion') {
-            if (!$envio->ubicacion_id) {
+            if (! $envio->ubicacion_id) {
                 throw new RuntimeException('El envío por ubicación no tiene ubicación asociada.');
             }
 
             $data = $this->reportService->getInventarioPorUbicacion($envio->ubicacion_id);
-            if (!$data['ubicacion']) {
+            if (! $data['ubicacion']) {
                 throw new RuntimeException('Ubicación no encontrada para generar el reporte.');
             }
 
             $view = 'pdf.ubicacion';
-            $descriptor = ($data['ubicacion']->codigo ?? 'UBI') . '_' . $fecha;
+            $descriptor = ($data['ubicacion']->codigo ?? 'UBI').'_'.$fecha;
             $excelExport = new UbicacionIndividualExport($envio->ubicacion_id, $meta);
         } else {
             $data = $this->reportService->getInventarioPorResponsable($envio->responsable_id);
-            if (!$data['responsable']) {
+            if (! $data['responsable']) {
                 throw new RuntimeException('Responsable no encontrado para generar el reporte.');
             }
 
             $view = 'pdf.responsable';
             $nombreLimpio = str_replace(' ', '_', $data['responsable']->nombre_completo);
-            $descriptor = $nombreLimpio . '_' . $fecha;
+            $descriptor = $nombreLimpio.'_'.$fecha;
             $excelExport = new ResponsableIndividualExport($envio->responsable_id, $meta);
         }
 
         $pdfFilename = "Inventario_{$envio->codigo_envio}_{$descriptor}.pdf";
         $excelFilename = "Inventario_{$envio->codigo_envio}_{$descriptor}.xlsx";
-        $pdfPath = $localDisk->path('temp/' . $pdfFilename);
-        $excelPath = $localDisk->path('temp/' . $excelFilename);
+        $pdfPath = $localDisk->path('temp/'.$pdfFilename);
+        $excelPath = $localDisk->path('temp/'.$excelFilename);
         $archivoPaths = [$pdfPath, $excelPath];
         $archivoNombres = [$pdfFilename, $excelFilename];
 
@@ -129,12 +128,12 @@ class InventarioFirmaEnvioService
                 'firmaEntrega' => $firmaEntrega,
             ])->save($pdfPath);
 
-            Excel::store($excelExport, 'temp/' . $excelFilename, 'local');
+            Excel::store($excelExport, 'temp/'.$excelFilename, 'local');
 
             if ($envio->tipo === 'por_ubicacion' && $envio->ubicacion_id) {
                 foreach ($this->getAdjuntableAnexosByUbicacion($envio->ubicacion_id) as $anexo) {
                     $publicDisk = Storage::disk('public');
-                    if (!$publicDisk->exists($anexo->archivo_pdf_path)) {
+                    if (! $publicDisk->exists($anexo->archivo_pdf_path)) {
                         continue;
                     }
 
@@ -147,7 +146,7 @@ class InventarioFirmaEnvioService
                 destinatario: $envio->responsable?->nombre_completo ?? 'Responsable',
                 tipoReporte: $envio->tipo === 'por_ubicacion' ? 'Inventario por Ubicación' : 'Inventario por Responsable',
                 nombreReporte: $envio->tipo === 'por_ubicacion'
-                    ? (($envio->ubicacion?->codigo ?? '') . ' - ' . ($envio->ubicacion?->nombre ?? 'Ubicación'))
+                    ? (($envio->ubicacion?->codigo ?? '').' - '.($envio->ubicacion?->nombre ?? 'Ubicación'))
                     : ($envio->responsable?->nombre_completo ?? 'Responsable'),
                 archivoPath: $archivoPaths,
                 archivoNombre: $archivoNombres,
@@ -209,7 +208,7 @@ class InventarioFirmaEnvioService
     }
 
     /**
-     * @param array{nombre:string,cargo:string,base64:?string} $firmaEntrega
+     * @param  array{nombre:string,cargo:string,base64:?string}  $firmaEntrega
      * @return array<string,string>
      */
     protected function buildExportMeta(EnvioInventario $envio, array $firmaEntrega): array
@@ -236,11 +235,11 @@ class InventarioFirmaEnvioService
 
     protected function dataUriFromPublicStoragePath(?string $path): ?string
     {
-        if (!$path) {
+        if (! $path) {
             return null;
         }
 
-        if (!Storage::disk('public')->exists($path)) {
+        if (! Storage::disk('public')->exists($path)) {
             return null;
         }
 
@@ -249,7 +248,7 @@ class InventarioFirmaEnvioService
 
     protected function dataUriFromAbsolutePath(?string $absolutePath): ?string
     {
-        if (!$absolutePath || !is_file($absolutePath)) {
+        if (! $absolutePath || ! is_file($absolutePath)) {
             return null;
         }
 
@@ -259,7 +258,7 @@ class InventarioFirmaEnvioService
             return null;
         }
 
-        return 'data:' . $mime . ';base64,' . base64_encode($content);
+        return 'data:'.$mime.';base64,'.base64_encode($content);
     }
 
     /**
@@ -279,10 +278,10 @@ class InventarioFirmaEnvioService
     protected function buildAnexoFilename(UbicacionInventarioAnexo $anexo): string
     {
         $slug = preg_replace('/[^A-Za-z0-9_-]+/', '_', $anexo->titulo) ?: 'anexo_interno';
-        $dateSuffix = $anexo->fecha_corte ? '_' . $anexo->fecha_corte->format('Ymd') : '';
+        $dateSuffix = $anexo->fecha_corte ? '_'.$anexo->fecha_corte->format('Ymd') : '';
         $extension = strtolower((string) pathinfo((string) $anexo->archivo_pdf_path, PATHINFO_EXTENSION));
         $extension = in_array($extension, ['pdf', 'docx', 'xlsx', 'doc', 'xls'], true) ? $extension : 'pdf';
 
-        return 'AnexoInventario_' . $slug . $dateSuffix . '.' . $extension;
+        return 'AnexoInventario_'.$slug.$dateSuffix.'.'.$extension;
     }
 }

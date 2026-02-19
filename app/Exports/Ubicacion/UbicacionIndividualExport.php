@@ -7,11 +7,12 @@ use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 class UbicacionIndividualExport implements WithMultipleSheets
 {
     protected int $ubicacionId;
+
     /** @var array<string,string> */
     protected array $meta;
 
     /**
-     * @param array<string,string> $meta
+     * @param  array<string,string>  $meta
      */
     public function __construct(int $ubicacionId, array $meta = [])
     {

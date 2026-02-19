@@ -20,7 +20,7 @@ return new class extends Migration
             $table->text('observaciones')->nullable();
             $table->boolean('activo')->default(true);
             $table->timestamps();
-            
+
             $table->unique(['sede_id', 'nombre']);
             $table->unique(['sede_id', 'codigo']);
         });

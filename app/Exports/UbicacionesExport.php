@@ -2,19 +2,19 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\DefaultTableStyles;
 use App\Models\Ubicacion;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithTitle;
 
-use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use App\Exports\Concerns\DefaultTableStyles;
-
-class UbicacionesExport implements FromCollection, WithHeadings, WithMapping, WithTitle, WithStyles, ShouldAutoSize
+class UbicacionesExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     use DefaultTableStyles;
+
     public function collection()
     {
         return Ubicacion::with(['sede', 'responsable'])->get();

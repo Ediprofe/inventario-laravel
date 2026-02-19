@@ -14,4 +14,3 @@ class ReportesInventarioResponsables extends ReportesInventario
 
     protected static ?int $navigationSort = 21;
 }
-

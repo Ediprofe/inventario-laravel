@@ -14,20 +14,27 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, WithColumnWidths
+class ResumenResponsableSheet implements FromArray, WithColumnWidths, WithStyles, WithTitle
 {
     protected int $responsableId;
+
     protected string $title;
+
     /** @var array<string,string> */
     protected array $meta;
+
     protected int $tableDataStartRow = 10;
+
     protected int $tableDataEndRow = 10;
+
     protected int $observacionesTitleRow = 0;
+
     protected int $observacionesBodyRow = 0;
+
     protected string $observacionesText = '';
 
     /**
-     * @param array<string,string> $meta
+     * @param  array<string,string>  $meta
      */
     public function __construct(int $responsableId, string $title, array $meta = [])
     {
@@ -65,9 +72,9 @@ class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, WithC
                 $responsable?->cargo ?? '-',
                 $responsable?->email ?? '-',
                 now()->format('Y-m-d H:i'),
-                !empty($this->meta['codigo_envio']) ? ' | Envío: ' : '',
+                ! empty($this->meta['codigo_envio']) ? ' | Envío: ' : '',
                 $this->meta['codigo_envio'] ?? '',
-                !empty($this->meta['firmante_responsable']) ? ' | Firma: ' . $this->meta['firmante_responsable'] : ''
+                ! empty($this->meta['firmante_responsable']) ? ' | Firma: '.$this->meta['firmante_responsable'] : ''
             ),
         ];
         $rows[] = [''];
@@ -94,10 +101,11 @@ class ResumenResponsableSheet implements FromArray, WithTitle, WithStyles, WithC
         $rows[] = ['Cód. Ubicación', 'Ubicación', 'Artículo', 'Cant. Total', 'En Uso', 'En Reparación', 'Extraviado', 'De Baja']; // row 9
 
         $grouped = $items
-            ->groupBy(fn ($item) => $item->ubicacion_id . '_' . $item->articulo_id)
+            ->groupBy(fn ($item) => $item->ubicacion_id.'_'.$item->articulo_id)
             ->sortBy(function ($group) {
                 $first = $group->first();
-                return mb_strtolower(($first->ubicacion->codigo ?? '') . ' ' . ($first->articulo->nombre ?? ''));
+
+                return mb_strtolower(($first->ubicacion->codigo ?? '').' '.($first->articulo->nombre ?? ''));
             });
 
         foreach ($grouped as $group) {

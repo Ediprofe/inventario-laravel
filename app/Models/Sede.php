@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Sede extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'nombre',
         'codigo',
@@ -36,7 +39,7 @@ class Sede extends Model
     {
         return $this->hasMany(Ubicacion::class);
     }
-    
+
     public function items(): HasMany
     {
         return $this->hasMany(Item::class);

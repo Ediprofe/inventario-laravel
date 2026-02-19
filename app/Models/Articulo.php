@@ -31,11 +31,11 @@ class Articulo extends Model
     public static function generateUniqueCodigo(string $categoria): string
     {
         $prefix = static::prefixForCategoria($categoria);
-        $pattern = '/^' . preg_quote($prefix, '/') . '-(\d{5})$/';
+        $pattern = '/^'.preg_quote($prefix, '/').'-(\d{5})$/';
         $maxSequence = 0;
 
         $codes = static::query()
-            ->where('codigo', 'like', $prefix . '-%')
+            ->where('codigo', 'like', $prefix.'-%')
             ->pluck('codigo');
 
         foreach ($codes as $code) {
@@ -101,12 +101,12 @@ class Articulo extends Model
         $disk = Storage::disk('public');
         $path = (string) $articulo->foto_path;
 
-        if (!$disk->exists($path)) {
+        if (! $disk->exists($path)) {
             $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
             if ($extension !== 'webp') {
                 $directory = trim((string) pathinfo($path, PATHINFO_DIRNAME), '.');
                 $filename = (string) pathinfo($path, PATHINFO_FILENAME);
-                $candidateWebpPath = ($directory !== '' ? $directory . '/' : '') . $filename . '.webp';
+                $candidateWebpPath = ($directory !== '' ? $directory.'/' : '').$filename.'.webp';
 
                 if ($disk->exists($candidateWebpPath)) {
                     static::query()->whereKey($articulo->id)->update(['foto_path' => $candidateWebpPath]);
@@ -122,7 +122,7 @@ class Articulo extends Model
             return;
         }
 
-        if (!in_array($extension, ['jpg', 'jpeg', 'png'], true)) {
+        if (! in_array($extension, ['jpg', 'jpeg', 'png'], true)) {
             return;
         }
 
@@ -133,13 +133,13 @@ class Articulo extends Model
             default => null,
         };
 
-        if (!$image) {
+        if (! $image) {
             return;
         }
 
         $directory = trim((string) pathinfo($path, PATHINFO_DIRNAME), '.');
         $filename = (string) pathinfo($path, PATHINFO_FILENAME);
-        $webpPath = ($directory !== '' ? $directory . '/' : '') . $filename . '.webp';
+        $webpPath = ($directory !== '' ? $directory.'/' : '').$filename.'.webp';
         $targetPath = $disk->path($webpPath);
 
         if (function_exists('imagepalettetotruecolor')) {
@@ -151,7 +151,7 @@ class Articulo extends Model
         $saved = @imagewebp($image, $targetPath, 82);
         imagedestroy($image);
 
-        if (!$saved) {
+        if (! $saved) {
             return;
         }
 

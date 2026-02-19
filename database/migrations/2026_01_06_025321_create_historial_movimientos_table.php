@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('item_id')->constrained('items')->cascadeOnDelete();
             $table->foreignId('responsable_id')->nullable()->constrained('users'); // Who performed action (User or Responsable? User typically)
             // Let's assume User (auth system) for now. If it's the responsable of the item, it's different.
-            // In Django it was 'responsable' (User). 
+            // In Django it was 'responsable' (User).
             // Let's use nullable FK to users table (default Laravel User).
             $table->string('tipo_movimiento');
             $table->json('detalles')->nullable();

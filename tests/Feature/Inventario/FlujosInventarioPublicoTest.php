@@ -4,7 +4,6 @@ namespace Tests\Feature\Inventario;
 
 use App\Models\EnvioInventario;
 use App\Models\Responsable;
-use App\Models\Sede;
 use App\Models\Ubicacion;
 use App\Models\User;
 use App\Services\InventarioFirmaEnvioService;
@@ -169,13 +168,10 @@ class FlujosInventarioPublicoTest extends TestCase
     {
         $responsable = $this->crearResponsableConSede();
 
-        return EnvioInventario::create([
+        return EnvioInventario::factory()->create([
             'responsable_id' => $responsable->id,
             'tipo' => 'por_responsable',
-            'ubicacion_id' => null,
             'email_enviado_a' => $responsable->email,
-            'enviado_at' => now(),
-            'token' => EnvioInventario::generarToken(),
         ]);
     }
 
@@ -183,30 +179,20 @@ class FlujosInventarioPublicoTest extends TestCase
     {
         $responsable = $this->crearResponsableConSede();
 
-        return Ubicacion::create([
+        return Ubicacion::factory()->create([
             'sede_id' => $responsable->sede_id,
             'nombre' => 'Aula 101',
             'codigo' => 'A101',
             'tipo' => 'aula',
             'responsable_id' => $responsable->id,
-            'activo' => true,
         ]);
     }
 
     private function crearResponsableConSede(): Responsable
     {
-        $sede = Sede::create([
-            'nombre' => 'Sede Principal',
-            'codigo' => 'PRIN-'.uniqid(),
-            'activo' => true,
-        ]);
-
-        return Responsable::create([
+        return Responsable::factory()->create([
             'nombre' => 'Docente',
             'apellido' => 'Prueba',
-            'email' => 'docente.'.uniqid().'@example.com',
-            'sede_id' => $sede->id,
-            'activo' => true,
         ]);
     }
 

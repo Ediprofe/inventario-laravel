@@ -12,7 +12,7 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ConsolidadoArticulosExport implements FromArray, WithHeadings, WithStyles, ShouldAutoSize, WithTitle
+class ConsolidadoArticulosExport implements FromArray, ShouldAutoSize, WithHeadings, WithStyles, WithTitle
 {
     use DefaultTableStyles;
 

@@ -17,7 +17,7 @@ return [
     'telefono' => env('INSTITUCION_TELEFONO', ''),
     'email' => env('INSTITUCION_EMAIL', ''),
     'ciudad' => env('INSTITUCION_CIUDAD', ''),
-    
+
     // Ruta relativa desde public/
     'logo' => env('INSTITUCION_LOGO', 'img/logo.png'),
     'membrete' => env('INSTITUCION_MEMBRETE', ''),

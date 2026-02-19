@@ -14,10 +14,12 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class DetalleResponsableSheet implements FromArray, WithTitle, WithStyles, WithHeadings, WithColumnWidths
+class DetalleResponsableSheet implements FromArray, WithColumnWidths, WithHeadings, WithStyles, WithTitle
 {
     protected int $responsableId;
+
     protected string $title;
+
     protected bool $onlyEnUso;
 
     public function __construct(int $responsableId, string $title, bool $onlyEnUso)
