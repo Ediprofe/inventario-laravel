@@ -53,6 +53,11 @@ class Responsable extends Model
         return $this->hasMany(Sede::class, 'coordinador_id');
     }
 
+    public function solicitudesAjusteInventario(): HasMany
+    {
+        return $this->hasMany(SolicitudAjusteInventario::class);
+    }
+
     protected static function booted(): void
     {
         static::saved(function (Responsable $responsable) {

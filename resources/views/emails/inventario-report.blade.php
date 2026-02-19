@@ -60,6 +60,28 @@
             margin-top: 14px;
             line-height: 1.7;
         }
+        .cta-box {
+            margin-top: 18px;
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid #bfdbfe;
+            background: #eff6ff;
+        }
+        .cta-box p {
+            margin: 0 0 10px 0;
+            font-size: 13px;
+            color: #1e3a8a;
+        }
+        .cta-button {
+            display: inline-block;
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: #1d4ed8;
+            color: #ffffff !important;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
         .footer {
             padding: 20px 32px;
             border-top: 1px solid #e2e8f0;
@@ -103,6 +125,13 @@
                 <div><strong>Relación documental:</strong> Este código identifica los archivos PDF y Excel adjuntos.</div>
                 <div><strong>Soporte de firma:</strong> La evidencia gráfica de firmas se conserva en el PDF adjunto.</div>
             </div>
+
+            @if($urlCitaAjuste)
+                <div class="cta-box">
+                    <p>Si requiere ajustes posteriores, puede solicitar una cita de revisión con coordinación de inventario.</p>
+                    <a class="cta-button" href="{{ $urlCitaAjuste }}">Solicitar cita de ajuste</a>
+                </div>
+            @endif
         </div>
         
         <div class="footer">

@@ -62,4 +62,12 @@ Route::post('/firma-entrega/capturar/{responsable}', [\App\Http\Controllers\Firm
     ->name('firma.entrega.guardar')
     ->middleware(['signed:relative', 'throttle:firma-entrega-submit']);
 
+// Public request form for scheduling inventory adjustment appointment
+Route::get('/inventario/cita-ajuste/{token}', [\App\Http\Controllers\SolicitudCitaInventarioController::class, 'mostrar'])
+    ->name('inventario.cita-ajuste.mostrar')
+    ->middleware('throttle:inventario-cita-view');
+Route::post('/inventario/cita-ajuste/{token}', [\App\Http\Controllers\SolicitudCitaInventarioController::class, 'guardar'])
+    ->name('inventario.cita-ajuste.guardar')
+    ->middleware('throttle:inventario-cita-submit');
+
 require __DIR__.'/auth.php';

@@ -5,37 +5,45 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
-class EnvioInventario extends Model
+class SolicitudAjusteInventario extends Model
 {
     use HasFactory;
 
-    protected $table = 'envios_inventario';
+    protected $table = 'solicitudes_ajuste_inventario';
 
     protected $appends = [
-        'codigo_envio',
+        'codigo_solicitud',
     ];
 
     protected $fillable = [
+        'envio_inventario_id',
         'responsable_id',
-        'tipo',
         'ubicacion_id',
-        'email_enviado_a',
-        'enviado_at',
-        'token',
-        'aprobado_at',
-        'ip_aprobacion',
-        'firmante_nombre',
-        'firma_base64',
-        'observaciones',
+        'tipo_solicitud',
+        'estado',
+        'solicitante_nombre',
+        'medio_contacto',
+        'contacto_detalle',
+        'franja_horaria',
+        'detalle',
+        'confirmado_coordinacion',
+        'solicitado_at',
+        'revisado_por_user_id',
+        'revisado_at',
+        'observacion_admin',
     ];
 
     protected $casts = [
-        'enviado_at' => 'datetime',
-        'aprobado_at' => 'datetime',
+        'confirmado_coordinacion' => 'boolean',
+        'solicitado_at' => 'datetime',
+        'revisado_at' => 'datetime',
     ];
+
+    public function envioInventario(): BelongsTo
+    {
+        return $this->belongsTo(EnvioInventario::class);
+    }
 
     public function responsable(): BelongsTo
     {
@@ -47,29 +55,14 @@ class EnvioInventario extends Model
         return $this->belongsTo(Ubicacion::class);
     }
 
-    public function solicitudesAjuste(): HasMany
+    public function revisadoPor(): BelongsTo
     {
-        return $this->hasMany(SolicitudAjusteInventario::class);
+        return $this->belongsTo(User::class, 'revisado_por_user_id');
     }
 
-    public function estaAprobado(): bool
+    public function getCodigoSolicitudAttribute(): string
     {
-        return $this->aprobado_at !== null;
-    }
-
-    public function estaPendiente(): bool
-    {
-        return $this->aprobado_at === null;
-    }
-
-    public static function generarToken(): string
-    {
-        return Str::uuid()->toString();
-    }
-
-    public function getCodigoEnvioAttribute(): string
-    {
-        return 'ENV-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
+        return 'CIT-'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 
     public static function resetConsecutive(): void

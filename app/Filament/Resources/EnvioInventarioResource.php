@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\EnvioInventarioResource\Pages;
 use App\Models\EnvioInventario;
+use App\Models\SolicitudAjusteInventario;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -111,11 +112,23 @@ class EnvioInventarioResource extends Resource
                     ->icon('heroicon-o-link')
                     ->url(fn (EnvioInventario $record) => url("/inventario/aprobar/{$record->token}"))
                     ->openUrlInNewTab(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->modalHeading('Eliminar envío')
+                    ->modalDescription('Se eliminará este envío de la base de datos. También se ajustará el consecutivo para nuevos registros.')
+                    ->after(function (): void {
+                        EnvioInventario::resetConsecutive();
+                        SolicitudAjusteInventario::resetConsecutive();
+                    }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->modalHeading('Eliminar envíos seleccionados')
+                        ->modalDescription('Se eliminarán de la base de datos y se ajustará el consecutivo para nuevos registros.')
+                        ->after(function (): void {
+                            EnvioInventario::resetConsecutive();
+                            SolicitudAjusteInventario::resetConsecutive();
+                        }),
                 ]),
             ]);
     }

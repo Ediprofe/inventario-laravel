@@ -30,6 +30,13 @@ class InventarioFirmaEnvioService
         return $baseUrl."/inventario/aprobar/{$token}";
     }
 
+    public function buildCitaAjusteUrl(string $token): string
+    {
+        $baseUrl = rtrim((string) config('app.public_url', config('app.url')), '/');
+
+        return $baseUrl."/inventario/cita-ajuste/{$token}";
+    }
+
     public function crearEnvioBorradorPorUbicacion(Ubicacion $ubicacion): EnvioInventario
     {
         $responsable = $ubicacion->responsable;
@@ -119,6 +126,7 @@ class InventarioFirmaEnvioService
         $excelPath = $localDisk->path('temp/'.$excelFilename);
         $archivoPaths = [$pdfPath, $excelPath];
         $archivoNombres = [$pdfFilename, $excelFilename];
+        $urlCitaAjuste = $this->buildCitaAjusteUrl($envio->token);
 
         try {
             DompdfRuntimeConfig::apply();
@@ -157,6 +165,7 @@ class InventarioFirmaEnvioService
                 firmaEntregaNombre: $firmaEntrega['nombre'],
                 firmaEntregaCargo: $firmaEntrega['cargo'],
                 firmaEntregaBase64: null,
+                urlCitaAjuste: $urlCitaAjuste,
             ));
 
             // Reflect actual email dispatch time.

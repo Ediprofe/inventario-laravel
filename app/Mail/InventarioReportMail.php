@@ -33,6 +33,8 @@ class InventarioReportMail extends Mailable
 
     public ?string $firmaEntregaBase64;
 
+    public ?string $urlCitaAjuste;
+
     /** @var array<array{path: string, name: string}> */
     protected array $archivos;
 
@@ -49,6 +51,7 @@ class InventarioReportMail extends Mailable
         ?string $firmaEntregaNombre = null,
         ?string $firmaEntregaCargo = null,
         ?string $firmaEntregaBase64 = null,
+        ?string $urlCitaAjuste = null,
     ) {
         $this->destinatario = $destinatario;
         $this->tipoReporte = $tipoReporte;
@@ -60,6 +63,7 @@ class InventarioReportMail extends Mailable
         $this->firmaEntregaNombre = $firmaEntregaNombre;
         $this->firmaEntregaCargo = $firmaEntregaCargo;
         $this->firmaEntregaBase64 = $firmaEntregaBase64;
+        $this->urlCitaAjuste = $urlCitaAjuste;
 
         // Normalize to array of files for multi-attachment support
         if (is_array($archivoPath)) {

@@ -50,6 +50,18 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by("entrega:submit:{$responsableId}|{$request->ip()}");
         });
 
+        RateLimiter::for('inventario-cita-view', function (Request $request) {
+            $token = (string) ($request->route('token') ?? 'na');
+
+            return Limit::perMinute(40)->by("cita:view:{$token}|{$request->ip()}");
+        });
+
+        RateLimiter::for('inventario-cita-submit', function (Request $request) {
+            $token = (string) ($request->route('token') ?? 'na');
+
+            return Limit::perMinute(8)->by("cita:submit:{$token}|{$request->ip()}");
+        });
+
         if (config('app.env') === 'production') {
             URL::forceScheme('https');
         }

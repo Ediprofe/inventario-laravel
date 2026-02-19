@@ -41,6 +41,11 @@ class FlujosInventarioPublicoTest extends TestCase
             ->assertJsonPath('success', true)
             ->assertJsonPath('email_destino', $ubicacion->responsable->email);
 
+        $this->assertStringEndsWith(
+            '/inventario/cita-ajuste/'.$response->json('token'),
+            (string) $response->json('url_cita_ajuste')
+        );
+
         $this->assertDatabaseHas('envios_inventario', [
             'tipo' => 'por_ubicacion',
             'ubicacion_id' => $ubicacion->id,
@@ -62,6 +67,11 @@ class FlujosInventarioPublicoTest extends TestCase
             ->assertOk()
             ->assertJsonPath('success', true)
             ->assertJsonPath('email_destino', $responsable->email);
+
+        $this->assertStringEndsWith(
+            '/inventario/cita-ajuste/'.$response->json('token'),
+            (string) $response->json('url_cita_ajuste')
+        );
 
         $this->assertDatabaseHas('envios_inventario', [
             'tipo' => 'por_responsable',
@@ -146,6 +156,14 @@ class FlujosInventarioPublicoTest extends TestCase
         $this->assertContains(
             'throttle:firma-entrega-submit',
             Route::getRoutes()->getByName('firma.entrega.guardar')->gatherMiddleware(),
+        );
+        $this->assertContains(
+            'throttle:inventario-cita-view',
+            Route::getRoutes()->getByName('inventario.cita-ajuste.mostrar')->gatherMiddleware(),
+        );
+        $this->assertContains(
+            'throttle:inventario-cita-submit',
+            Route::getRoutes()->getByName('inventario.cita-ajuste.guardar')->gatherMiddleware(),
         );
     }
 
