@@ -30,7 +30,11 @@ class CreateItem extends CreateRecord
     {
         $returnTo = request()->query('return_to');
 
-        if (is_string($returnTo) && str_starts_with($returnTo, '/')) {
+        if (
+            is_string($returnTo)
+            && str_starts_with($returnTo, '/admin/')
+            && ! str_starts_with($returnTo, '/livewire/')
+        ) {
             return $returnTo;
         }
 
