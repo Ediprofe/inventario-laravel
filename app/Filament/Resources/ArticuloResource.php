@@ -13,7 +13,6 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ArticuloResource extends Resource
 {
@@ -53,16 +52,6 @@ class ArticuloResource extends Resource
                     ->maxSize(10240)
                     ->rules([
                         'mimes:jpg,jpeg,png,webp,heic,heif',
-                        function (string $attribute, mixed $value, \Closure $fail): void {
-                            if (! $value instanceof TemporaryUploadedFile) {
-                                return;
-                            }
-
-                            $extension = strtolower($value->getClientOriginalExtension() ?: $value->extension());
-                            if (in_array($extension, ['heic', 'heif'], true) && ! extension_loaded('imagick')) {
-                                $fail('Este servidor aún no tiene soporte HEIC/HEIF. En iPhone use Cámara > Formatos > Más compatible (JPG), o solicite habilitar Imagick en el servidor.');
-                            }
-                        },
                     ])
                     ->validationMessages([
                         'mimes' => 'Formato no compatible. Use JPG, PNG, WEBP o HEIC/HEIF.',
