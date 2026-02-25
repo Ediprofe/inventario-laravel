@@ -6,6 +6,7 @@ use App\Enums\CategoriaArticulo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class Articulo extends Model
 {
@@ -122,34 +123,21 @@ class Articulo extends Model
             return;
         }
 
-        if (! in_array($extension, ['jpg', 'jpeg', 'png'], true)) {
+        if (! in_array($extension, ['jpg', 'jpeg', 'png', 'heic', 'heif'], true)) {
             return;
         }
 
         $sourcePath = $disk->path($path);
-        $image = match ($extension) {
-            'jpg', 'jpeg' => @imagecreatefromjpeg($sourcePath),
-            'png' => @imagecreatefrompng($sourcePath),
-            default => null,
-        };
-
-        if (! $image) {
-            return;
-        }
-
         $directory = trim((string) pathinfo($path, PATHINFO_DIRNAME), '.');
         $filename = (string) pathinfo($path, PATHINFO_FILENAME);
         $webpPath = ($directory !== '' ? $directory.'/' : '').$filename.'.webp';
         $targetPath = $disk->path($webpPath);
 
-        if (function_exists('imagepalettetotruecolor')) {
-            imagepalettetotruecolor($image);
-        }
-        imagealphablending($image, true);
-        imagesavealpha($image, true);
-
-        $saved = @imagewebp($image, $targetPath, 82);
-        imagedestroy($image);
+        $saved = match ($extension) {
+            'jpg', 'jpeg', 'png' => static::convertWithGd($sourcePath, $targetPath, $extension),
+            'heic', 'heif' => static::convertWithImagick($sourcePath, $targetPath),
+            default => false,
+        };
 
         if (! $saved) {
             return;
@@ -162,6 +150,52 @@ class Articulo extends Model
         if ($articulo->foto_path !== $webpPath) {
             static::query()->whereKey($articulo->id)->update(['foto_path' => $webpPath]);
             $articulo->forceFill(['foto_path' => $webpPath]);
+        }
+    }
+
+    protected static function convertWithGd(string $sourcePath, string $targetPath, string $extension): bool
+    {
+        $image = match ($extension) {
+            'jpg', 'jpeg' => @imagecreatefromjpeg($sourcePath),
+            'png' => @imagecreatefrompng($sourcePath),
+            default => null,
+        };
+
+        if (! $image) {
+            return false;
+        }
+
+        if (function_exists('imagepalettetotruecolor')) {
+            imagepalettetotruecolor($image);
+        }
+        imagealphablending($image, true);
+        imagesavealpha($image, true);
+
+        $saved = @imagewebp($image, $targetPath, 82);
+        imagedestroy($image);
+
+        return (bool) $saved;
+    }
+
+    protected static function convertWithImagick(string $sourcePath, string $targetPath): bool
+    {
+        if (! extension_loaded('imagick') || ! class_exists(\Imagick::class)) {
+            return false;
+        }
+
+        try {
+            $imagick = new \Imagick;
+            $imagick->readImage($sourcePath.'[0]');
+            $imagick->setImageFormat('webp');
+            $imagick->setImageCompressionQuality(82);
+            $imagick->stripImage();
+            $saved = $imagick->writeImage($targetPath);
+            $imagick->clear();
+            $imagick->destroy();
+
+            return (bool) $saved;
+        } catch (Throwable) {
+            return false;
         }
     }
 }

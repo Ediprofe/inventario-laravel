@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class ArticuloResource extends Resource
 {
@@ -40,19 +41,36 @@ class ArticuloResource extends Resource
                     ->disk('public')
                     ->directory('articulos')
                     ->visibility('public')
-                    ->image()
-                    ->imageResizeMode('contain')
-                    ->imageResizeTargetWidth(1200)
-                    ->imageResizeTargetHeight(1200)
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                    ->acceptedFileTypes([
+                        'image/jpeg',
+                        'image/png',
+                        'image/webp',
+                        'image/heic',
+                        'image/heif',
+                        'image/heic-sequence',
+                        'image/heif-sequence',
+                    ])
                     ->maxSize(10240)
+                    ->rules([
+                        'mimes:jpg,jpeg,png,webp,heic,heif',
+                        function (string $attribute, mixed $value, \Closure $fail): void {
+                            if (! $value instanceof TemporaryUploadedFile) {
+                                return;
+                            }
+
+                            $extension = strtolower($value->getClientOriginalExtension() ?: $value->extension());
+                            if (in_array($extension, ['heic', 'heif'], true) && ! extension_loaded('imagick')) {
+                                $fail('Este servidor aún no tiene soporte HEIC/HEIF. En iPhone use Cámara > Formatos > Más compatible (JPG), o solicite habilitar Imagick en el servidor.');
+                            }
+                        },
+                    ])
                     ->validationMessages([
-                        'image' => 'Formato no compatible. Use JPG, PNG o WEBP.',
+                        'mimes' => 'Formato no compatible. Use JPG, PNG, WEBP o HEIC/HEIF.',
                         'max' => 'La imagen supera el tamaño permitido (10 MB).',
                     ])
                     ->openable()
                     ->downloadable()
-                    ->helperText('Opcional. Recomendado JPG/PNG/WEBP. Si sube JPG/PNG se optimiza automáticamente a WEBP. En iPhone, use Camara > Formatos > Mas compatible para evitar HEIC.')
+                    ->helperText('Opcional. Se optimiza automáticamente a WEBP. Soporta JPG/PNG/WEBP y HEIC/HEIF (si el servidor tiene Imagick).')
                     ->columnSpanFull(),
                 Forms\Components\Toggle::make('activo')
                     ->required()
