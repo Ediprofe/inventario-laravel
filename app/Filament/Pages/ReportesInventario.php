@@ -871,7 +871,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
 
     protected function getContextUrl(): string
     {
-        $basePath = parse_url(static::getUrl(), PHP_URL_PATH) ?: '/admin/reportes-inventario';
+        $basePath = trim((string) (parse_url(static::getUrl(), PHP_URL_PATH) ?: 'admin/reportes-inventario'), '/');
 
         $query = match ($this->activeTab) {
             'ubicacion' => [
