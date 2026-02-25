@@ -21,6 +21,7 @@ use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Url;
 
 class ReportesInventario extends Page implements HasForms, HasTable
@@ -493,6 +494,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
             return [
                 'articulo_id' => $firstItem->articulo_id,
                 'articulo' => $firstItem->articulo->nombre ?? 'Desconocido',
+                'articulo_foto_url' => $this->getArticuloFotoUrl($firstItem->articulo?->foto_path),
                 'cantidad' => $group->count(),
                 'estado_breakdown' => $estadoBreakdown,
                 'disponibilidad_breakdown' => $disponibilidadBreakdown,
@@ -621,6 +623,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
                     'codigo_ubicacion' => $first->ubicacion->codigo ?? '',
                     'ubicacion' => $first->ubicacion->nombre ?? '?',
                     'articulo' => $first->articulo->nombre ?? '?',
+                    'articulo_foto_url' => $this->getArticuloFotoUrl($first->articulo?->foto_path),
                     'cantidad' => $items->sum('total'),
                     'estado_breakdown' => $breakdown,
                     'disponibilidad_breakdown' => $disponibilidadBreakdown,
@@ -718,6 +721,7 @@ class ReportesInventario extends Page implements HasForms, HasTable
             $row = [
                 'id' => $art->id,
                 'nombre' => $art->nombre,
+                'foto_url' => $this->getArticuloFotoUrl($art->foto_path),
                 'total_row' => 0,
                 'sedes' => [],
             ];
@@ -910,6 +914,19 @@ class ReportesInventario extends Page implements HasForms, HasTable
             Disponibilidad::EXTRAVIADO => 'danger',
             Disponibilidad::DE_BAJA => 'gray',
         };
+    }
+
+    protected function getArticuloFotoUrl(?string $path): ?string
+    {
+        if (! is_string($path) || trim($path) === '') {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+            return $path;
+        }
+
+        return Storage::disk('public')->url($path);
     }
 
     // --- Email Modal Methods ---

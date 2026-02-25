@@ -1,5 +1,8 @@
 <x-filament-panels::page>
     <div id="reportes-inventario-root">
+        <style>
+            [x-cloak] { display: none !important; }
+        </style>
         <div class="flex flex-wrap gap-2 mb-6">
             <a href="/admin/reportes-inventario"
                class="px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $activeTab === 'ubicacion' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300' }}">
@@ -172,7 +175,12 @@
                         <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                             @foreach($this->itemsPorUbicacion as $row)
                                 <tr class="odd:bg-white even:bg-slate-50/45 hover:bg-blue-50/45 dark:odd:bg-gray-900 dark:even:bg-gray-900/70 dark:hover:bg-white/5 transition-colors">
-                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">{{ $row['articulo'] }}</td>
+                                    <td class="px-6 py-4">
+                                        <x-inventario.article-hover-preview
+                                            :name="$row['articulo']"
+                                            :photo-url="$row['articulo_foto_url'] ?? null"
+                                        />
+                                    </td>
                                     <td class="px-6 py-4 text-right">
                                         <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full font-semibold dark:bg-blue-900/50 dark:text-blue-300">
                                             {{ $row['cantidad'] }}
@@ -369,7 +377,12 @@
                                             {{ $row['ubicacion'] }}
                                         </div>
                                     </td>
-                                    <td class="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">{{ $row['articulo'] }}</td>
+                                    <td class="px-6 py-4">
+                                        <x-inventario.article-hover-preview
+                                            :name="$row['articulo']"
+                                            :photo-url="$row['articulo_foto_url'] ?? null"
+                                        />
+                                    </td>
                                     <td class="px-6 py-4 text-right">
                                         <span class="px-3 py-1 bg-purple-50 text-purple-600 rounded-full font-bold dark:bg-purple-900/50 dark:text-purple-400">
                                             {{ $row['cantidad'] }}
@@ -517,7 +530,10 @@
                         @foreach($this->matrixData['rows'] as $row)
                             <tr class="group odd:bg-white even:bg-slate-50/35 hover:bg-blue-50/35 dark:odd:bg-gray-900 dark:even:bg-gray-900/70 dark:hover:bg-white/5 transition-colors duration-150">
                                 <td class="px-6 py-4 font-medium text-gray-900 sticky left-0 bg-white dark:bg-gray-900 group-hover:bg-gray-50 dark:group-hover:bg-gray-800 dark:text-gray-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] transition-colors">
-                                    {{ $row['nombre'] }}
+                                    <x-inventario.article-hover-preview
+                                        :name="$row['nombre']"
+                                        :photo-url="$row['foto_url'] ?? null"
+                                    />
                                 </td>
                                 @foreach($this->matrixData['sedes'] as $sede)
                                     <td class="px-4 py-3 text-center border-l border-gray-100 dark:border-gray-800 align-top">
